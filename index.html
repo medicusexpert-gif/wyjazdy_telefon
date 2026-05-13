@@ -3,28 +3,29 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
-    <title>Grafik iPhone 11</title>
+    <title>Grafik Pracowniczy</title>
     <link rel="stylesheet" href="style.css">
 </head>
 <body>
-    <div class="main-scroll-container">
-        <div class="header">
-            <img src="logo.png" alt="Logo" class="iphone-logo">
-            <div class="title-box">
-                <div class="title" id="current-month-name">ŁADOWANIE...</div>
-                <div class="time" id="clock">00:00:00</div>
-            </div>
-        </div>
-
-        <div id="month-nav" class="nav-container"></div>
-
-        <div id="table-container"></div>
-        
-        <div class="footer">
-            <button class="refresh-btn" onclick="loadData()">AKTUALIZUJ DANE</button>
-            <p>Ostatnia synchronizacja: <span id="update-time">-</span></p>
+    <div class="header">
+        <img src="logo.png" alt="Logo" class="iphone-logo">
+        <div class="title-box">
+            <div class="title" id="current-month-name">GRAFIK 2026</div>
+            <div class="time" id="clock">00:00:00</div>
         </div>
     </div>
+
+    <div id="month-nav" class="nav-container"></div>
+
+    <div id="table-container">
+        <p style="text-align:center; padding:50px; color:white;">Ładowanie danych...</p>
+    </div>
+    
+    <div class="footer">
+        <button class="refresh-btn" onclick="loadData()">AKTUALIZUJ DANE</button>
+        <p>Ostatnia synchronizacja: <span id="update-time">-</span></p>
+    </div>
+
     <script src="script.js"></script>
 </body>
 </html>
