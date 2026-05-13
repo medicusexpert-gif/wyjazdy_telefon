@@ -3,23 +3,25 @@ body {
     margin: 0; 
     background: #020617; 
     color: white; 
-    font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif; 
-    height: 100dvh;
-    overflow: hidden;
+    font-family: -apple-system, BlinkMacSystemFont, sans-serif; 
+    /* Odblokowujemy naturalne przewijanie całego ekranu */
+    overflow-x: hidden; 
+    overflow-y: auto; 
+    height: auto; 
 }
 
 .wrapper { 
-    height: 100dvh; 
     display: flex; 
     flex-direction: column;
     padding-left: env(safe-area-inset-left);
     padding-right: env(safe-area-inset-right);
+    padding-bottom: 40px; /* Miejsce na dole strony */
 }
 
-/* Nowy nagłówek z logo */
+/* Nagłówek */
 .header {
     background: #0f172a;
-    padding: 10px 15px;
+    padding: 15px;
     display: flex;
     justify-content: space-between;
     align-items: center;
@@ -27,59 +29,62 @@ body {
 }
 
 .header-left { display: flex; align-items: center; gap: 12px; }
-.header-logo { height: 30px; width: auto; object-fit: contain; }
+.header-logo { height: 25px; width: auto; }
 .title { font-size: 18px; font-weight: bold; color: #38bdf8; }
-.time { font-size: 18px; font-family: monospace; }
+.time { font-size: 18px; font-family: monospace; color: #94a3b8; }
 
-/* Nawigacja miesięcy pod nagłówkiem */
+/* Zakładki miesięcy - teraz w jednej linii, przewijane w poziomie */
 .nav-container { 
     display: flex; 
-    overflow-x: auto; 
-    padding: 8px; 
-    gap: 6px; 
+    flex-wrap: nowrap; /* Wymuszamy jedną linię */
+    overflow-x: auto;  /* Pozwalamy przesuwać miesiące lewo-prawo */
+    padding: 10px 5px; 
+    gap: 5px; 
     background: #020617;
-    -webkit-overflow-scrolling: touch;
+    -webkit-overflow-scrolling: touch; /* Płynność na iPhone */
+    border-bottom: 1px solid #1e293b;
 }
+
+/* Ukrywamy pasek przewijania dla miesięcy, żeby wyglądało czyściej */
+.nav-container::-webkit-scrollbar { display: none; }
+
 .nav-btn { 
-    flex: 0 0 auto;
+    flex: 0 0 auto; /* Przycisk nie zmienia rozmiaru */
     background: #1e293b; 
     color: #94a3b8; 
     border: 1px solid #334155; 
-    padding: 6px 12px; 
-    font-size: 12px; 
+    padding: 8px 15px; 
+    font-size: 13px; 
     border-radius: 6px; 
+    white-space: nowrap;
 }
 .nav-btn.active { color: #00ff00; border-color: #00ff00; background: #064e3b; }
 
-/* Tabela */
+/* Tabela - teraz nie ma własnego scrolla, jest częścią strony */
 #table-container { 
-    flex-grow: 1; 
-    overflow: auto; 
-    -webkit-overflow-scrolling: touch;
+    width: 100%;
+    overflow-x: auto; /* Tabela wciąż może być szersza niż ekran (zoom) */
 }
-table { width: 100%; border-collapse: collapse; min-width: 600px; }
+table { width: 100%; border-collapse: collapse; min-width: 650px; }
 
 th { 
     background: #1e293b; 
     color: #94a3b8; 
     font-size: 11px; 
-    padding: 8px 4px; 
+    padding: 12px 4px; 
     text-transform: uppercase;
-    position: sticky;
-    top: 0;
-    z-index: 10;
 }
 
 .tech-data { 
-    height: 45px; 
+    height: 50px; /* Nieco wyższe wiersze pod palec */
     border: 1px solid #1e293b; 
     text-align: center; 
     font-size: 15px;
 }
 
-/* Marquee */
+/* Animacja Marquee */
 .marquee-box { width: 100%; height: 100%; display: flex; align-items: center; overflow: hidden; }
-.marquee-box span { display: inline-block; white-space: nowrap; padding: 0 8px; will-change: transform; }
+.marquee-box span { display: inline-block; white-space: nowrap; padding: 0 10px; will-change: transform; }
 .animate-scroll { animation: smart-scroll 8s linear infinite alternate; }
 
 @keyframes smart-scroll {
@@ -87,23 +92,28 @@ th {
   80%, 100% { transform: translateX(var(--scroll-dist)); }
 }
 
-/* Kolory i Dni */
-.day { width: 45px; font-size: 12px; font-weight: bold; text-align: center; color: #64748b; }
-.date { width: 55px; font-size: 12px; font-weight: bold; text-align: center; color: #38bdf8; }
+.day { width: 50px; font-size: 12px; font-weight: bold; text-align: center; color: #64748b; }
+.date { width: 60px; font-size: 12px; font-weight: bold; text-align: center; color: #38bdf8; }
 .week-odd { background: #0f172a; }
 .week-even { background: #020617; }
-.today-row { background: #064e3b !important; outline: 1px solid #00ff00; }
+.today-row { background: #064e3b !important; }
 
-.neon-blue-text { color: #00d2ff; font-weight: bold; text-shadow: 0 0 5px #0044ff; }
-
-/* Stopka na iPhone */
+/* Stopka */
 .footer { 
-    background: #0f172a; 
-    padding: 10px; 
+    padding: 20px 15px; 
     display: flex; 
-    justify-content: space-between; 
-    align-items: center; 
+    flex-direction: column;
+    align-items: center;
+    gap: 10px;
     font-size: 12px; 
     color: #475569;
 }
-.refresh-btn { background: #0ea5e9; color: white; border: none; padding: 8px 15px; border-radius: 6px; font-weight: bold; }
+.refresh-btn { 
+    background: #0ea5e9; 
+    color: white; 
+    border: none; 
+    padding: 12px 30px; 
+    border-radius: 8px; 
+    font-weight: bold; 
+    width: 100%; /* Duży przycisk łatwy do kliknięcia */
+}
