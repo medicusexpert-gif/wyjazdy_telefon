@@ -90,7 +90,7 @@ function renderTable(rows) {
     const today = new Date();
     const todayStr = `${today.getFullYear()}-${String(today.getMonth() + 1).padStart(2, '0')}-${String(today.getDate()).padStart(2, '0')}`;
     
-    let html = `<table><colgroup><col style="width:55px;"><col style="width:75px;"><col style="width:300px;"><col style="width:300px;"><col style="width:300px;"><col style="width:300px;"></colgroup>`;
+    let html = `<table><colgroup><col style="width:75px;"><col style="width:65px;"><col style="width:300px;"><col style="width:300px;"><col style="width:300px;"><col style="width:300px;"></colgroup>`;
     
     let weekCounter = 0;
     
