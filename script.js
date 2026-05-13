@@ -41,7 +41,7 @@ async function loadData() {
         const now = new Date();
         const todayCSV = `${now.getFullYear()}-${String(now.getMonth() + 1).padStart(2, '0')}-${String(now.getDate()).padStart(2, '0')}`;
         
-        let html = "<table><colgroup><col style='width:50px;'><col style='width:70px;'><col style='width:300px;'><col style='width:300px;'><col style='width:300px;'><col style='width:300px;'></colgroup>";
+        let html = "<table><colgroup><col style='width:70px;'><col style='width:90px;'><col style='width:300px;'><col style='width:300px;'><col style='width:300px;'><col style='width:300px;'></colgroup>";
         
         let weekCounter = 0;
         rows.forEach((row, i) => {
