@@ -42,14 +42,14 @@ async function loadData() {
         const todayCSV = `${now.getFullYear()}-${String(now.getMonth() + 1).padStart(2, '0')}-${String(now.getDate()).padStart(2, '0')}`;
         
         let html = "<table>";
-        // 50px + 65px na daty, reszta (ok. 200px na każdego) dla techników
+        // SZEROKIE KOLUMNY (300px na technika)
         html += `<colgroup>
             <col style="width: 50px;">
-            <col style="width: 65px;">
-            <col style="width: 196px;">
-            <col style="width: 196px;">
-            <col style="width: 196px;">
-            <col style="width: 196px;">
+            <col style="width: 70px;">
+            <col style="width: 300px;">
+            <col style="width: 300px;">
+            <col style="width: 300px;">
+            <col style="width: 300px;">
         </colgroup>`;
         
         let weekCounter = 0;
@@ -58,9 +58,9 @@ async function loadData() {
             const isToday = row[1] && row[1].trim() === todayCSV;
 
             if (i < 2) {
-                html += `<thead><tr>`;
+                html += "<thead><tr>";
                 row.forEach((cell, j) => { if(j <= 5) html += `<th>${cell}</th>`; });
-                html += `</tr></thead>`;
+                html += "</tr></thead>";
             } else {
                 html += `<tr class="${weekCounter % 2 === 0 ? 'week-even' : 'week-odd'} ${isToday ? 'today-row' : ''}">`;
                 row.forEach((cell, j) => {
@@ -89,7 +89,7 @@ function initSmartMarquee() {
     spans.forEach(span => {
         const box = span.parentElement;
         if (span.offsetWidth > box.offsetWidth) {
-            const distance = span.offsetWidth - box.offsetWidth + 20;
+            const distance = span.offsetWidth - box.offsetWidth + 40;
             span.style.setProperty('--scroll-dist', `-${distance}px`);
             span.classList.add('animate-scroll');
         }
@@ -110,7 +110,12 @@ function hideWeekends() {
     const rows = document.querySelectorAll("table tr");
     rows.forEach((row) => {
         const dayCell = row.querySelector(".day");
-        if (dayCell && (dayCell.innerText === "Sob" || dayCell.innerText === "Nd")) row.style.display = "none";
+        if (dayCell) {
+            const text = dayCell.innerText.trim().toLowerCase();
+            if (text === "sob" || text === "nd" || text === "sobota" || text === "niedziela") {
+                row.classList.add("hidden-weekend");
+            }
+        }
     });
 }
 
