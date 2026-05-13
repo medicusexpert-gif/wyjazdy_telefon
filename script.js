@@ -44,8 +44,16 @@ async function loadData() {
         const todayCSV = `${now.getFullYear()}-${String(now.getMonth() + 1).padStart(2, '0')}-${String(now.getDate()).padStart(2, '0')}`;
         
         let html = "<table>";
+        // Sztywne kolumny, żeby nic nie skakało
         html += `<colgroup>
-            <col style="width: 70px;">  <col style="width: 90px;">  <col style="width: 180px;"> <col style="width: 180px;"> <col style="width: 180px;"> <col style="width: 180px;"> </colgroup>`;
+            <col style="width: 70px;">
+            <col style="width: 90px;">
+            <col style="width: auto;">
+            <col style="width: auto;">
+            <col style="width: auto;">
+            <col style="width: auto;">
+        </colgroup>`;
+        
         let weekCounter = 0;
         rows.forEach((row, i) => {
             if (i > 1 && row[0] && row[0].toLowerCase().includes("poniedziałek")) weekCounter++;
@@ -58,14 +66,22 @@ async function loadData() {
                 if (j > 5) return; 
 
                 if (i === 0) {
-                    if (j === 0) html += `<th class="logo-space" rowspan="2" colspan="2" id="main-logo-container"></th>`;
-                    else if (j > 1) {
+                    if (j === 0) {
+                        // BRAK ROWSPAN - Logo będzie pływać nad tą komórką
+                        html += `<th class="logo-space" id="main-logo-container"></th>`;
+                    } else if (j === 1) {
+                        html += `<th class="logo-space-empty"></th>`;
+                    } else if (j > 1) {
                         const nameColors = ["", "", "#38bdf8", "#818cf8", "#fbbf24", "#f472b6"];
                         html += `<th style="color: ${nameColors[j]}; font-size: 2.2vh; font-weight: bold;">${cell}</th>`;
                     }
                 } 
                 else if (i === 1) {
-                    if (j > 1) html += `<th style="color: #64748b; font-size: 1.4vh; font-weight: normal;">${cell}</th>`;
+                    if (j === 0 || j === 1) {
+                        html += `<th class="logo-space-filler"></th>`;
+                    } else if (j > 1) {
+                        html += `<th style="color: #64748b; font-size: 1.4vh; font-weight: normal;">${cell}</th>`;
+                    }
                 } 
                 else {
                     let className = (j === 0) ? "day" : (j === 1) ? "date" : "tech-data";
@@ -112,7 +128,7 @@ async function loadData() {
         if (logoCont) logoCont.innerHTML = `<img src="${logoUrl}" alt="Logo" class="table-logo">`;
 
         document.getElementById("update-time").innerText = new Date().toLocaleTimeString();
-        updateClock(); // Odśwież nagłówek miesiąca
+        updateClock();
         hideWeekends();
         setTimeout(initSmartMarquee, 600);
     } catch (err) { 
@@ -126,7 +142,6 @@ function initSmartMarquee() {
     spans.forEach(span => {
         const box = span.parentElement;
         span.classList.remove('animate-scroll');
-        // Reset transformacji przed obliczeniem
         span.style.transform = "translateX(0)";
         
         if (span.offsetWidth > (box.offsetWidth - 5)) {
@@ -147,7 +162,6 @@ function shortenDay(day) {
 
 function shortenDate(dateStr) {
     const parts = dateStr.split("-");
-    // Zmieniamy RRRR-MM-DD na DD.MM
     return parts.length === 3 ? `${parts[2]}.${parts[1]}` : dateStr;
 }
 
@@ -178,20 +192,11 @@ function updateClock() {
     const clock = document.getElementById("clock");
     const now = new Date();
     if (clock) clock.innerText = now.toLocaleTimeString("pl-PL");
-    
-    // NAPRAWA NAGŁÓWKA:
     const monthHeader = document.getElementById("current-month-name");
     if (monthHeader) {
         const selectedMonthIndex = parseInt(currentViewMonth) - 1;
         monthHeader.innerText = `${monthNames[selectedMonthIndex].toUpperCase()} 2026`;
     }
-}
-
-function activateAndRefresh() {
-    const elem = document.documentElement;
-    if (elem.requestFullscreen) elem.requestFullscreen();
-    else if (elem.webkitRequestFullscreen) elem.webkitRequestFullscreen();
-    loadData();
 }
 
 renderNav();
