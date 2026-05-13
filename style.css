@@ -1,144 +1,43 @@
-/* RESET I PODSTAWA */
-* { 
-    box-sizing: border-box; 
-    -webkit-tap-highlight-color: transparent;
-}
+* { box-sizing: border-box; -webkit-tap-highlight-color: transparent; }
+body { margin: 0; background: #020617; color: white; font-family: -apple-system, sans-serif; overflow-x: hidden; overflow-y: auto; }
 
-body { 
-    margin: 0; 
-    background: #020617; 
-    color: white; 
-    font-family: -apple-system, sans-serif; 
-    overflow-x: hidden; 
-    overflow-y: auto; 
-}
-
-/* NAGŁÓWEK */
 .header {
-    background: #0f172a;
-    padding: 15px;
-    display: flex;
-    align-items: center;
-    gap: 15px;
-    border-bottom: 1px solid #1e293b;
-    height: 80px;
+    background: #0f172a; padding: 15px; display: flex; align-items: center; gap: 15px;
+    border-bottom: 1px solid #1e293b; height: 80px;
 }
-
-.iphone-logo {
-    height: 40px !important;
-    width: auto !important;
-    max-width: 120px;
-    object-fit: contain;
-}
-
+.iphone-logo { height: 40px !important; width: auto !important; max-width: 120px; object-fit: contain; }
 .title-box { display: flex; flex-direction: column; }
 .title { font-size: 18px; font-weight: bold; color: #38bdf8; }
 .time { font-size: 13px; color: #94a3b8; font-family: monospace; }
 
-/* NAWIGACJA */
 .nav-container { 
-    display: flex; 
-    overflow-x: auto; 
-    white-space: nowrap;
-    padding: 12px 10px; 
-    background: #020617;
-    -webkit-overflow-scrolling: touch;
-    border-bottom: 1px solid #1e293b;
-    gap: 8px;
+    display: flex; overflow-x: auto; white-space: nowrap; padding: 12px 10px; 
+    background: #020617; -webkit-overflow-scrolling: touch; border-bottom: 1px solid #1e293b; gap: 8px;
 }
 .nav-container::-webkit-scrollbar { display: none; }
-
-.nav-btn { 
-    flex: 0 0 auto;
-    background: #1e293b; 
-    color: #94a3b8; 
-    border: 1px solid #334155; 
-    padding: 10px 16px; 
-    font-size: 14px; 
-    border-radius: 8px; 
-}
+.nav-btn { flex: 0 0 auto; background: #1e293b; color: #94a3b8; border: 1px solid #334155; padding: 10px 16px; font-size: 14px; border-radius: 8px; }
 .nav-btn.active { color: #00ff00; border-color: #00ff00; background: #064e3b; }
 
-/* TABELA */
-#table-container { 
-    width: 100%;
-    overflow-x: auto;
-    -webkit-overflow-scrolling: touch;
-}
+#table-container { width: 100%; overflow-x: auto; -webkit-overflow-scrolling: touch; }
+table { width: 100%; border-collapse: separate; border-spacing: 0; table-layout: fixed; min-width: 1320px; }
+th { background: #1e293b; color: #94a3b8; font-size: 12px; padding: 15px 5px; position: sticky; top: 0; z-index: 100; border-bottom: 1px solid #334155; }
 
-table { 
-    width: 100%; 
-    border-collapse: separate; 
-    border-spacing: 0;
-    table-layout: fixed;
-    min-width: 1320px; 
-}
-
-th { 
-    background: #1e293b; 
-    color: #94a3b8; 
-    font-size: 12px; 
-    padding: 15px 5px; 
-    position: sticky;
-    top: 0;
-    z-index: 100;
-    border-bottom: 1px solid #334155;
-}
-
-/* BLOKOWANIE DATY */
-th:nth-child(1), td:nth-child(1) {
-    position: sticky !important;
-    left: 0 !important;
-    z-index: 50;
-    width: 50px;
-}
-
-th:nth-child(2), td:nth-child(2) {
-    position: sticky !important;
-    left: 50px !important;
-    z-index: 50;
-    width: 70px;
-    border-right: 3px solid #38bdf8 !important;
-}
+/* STICKY COLUMNS */
+th:nth-child(1), td:nth-child(1) { position: sticky !important; left: 0 !important; z-index: 50; width: 50px; }
+th:nth-child(2), td:nth-child(2) { position: sticky !important; left: 50px !important; z-index: 50; width: 70px; border-right: 3px solid #38bdf8 !important; }
 
 tr.week-odd td:nth-child(1), tr.week-odd td:nth-child(2) { background-color: #0f172a; }
 tr.week-even td:nth-child(1), tr.week-even td:nth-child(2) { background-color: #020617; }
 tr.today-row td:nth-child(1), tr.today-row td:nth-child(2) { background-color: #164e63 !important; }
 
-/* DANE TECHNIKÓW - NAPRAWA UCINANIA */
-.tech-data { 
-    height: 65px; 
-    border-bottom: 1px solid #1e293b; 
-    border-right: 1px solid #1e293b;
-    font-size: 16px;
-    overflow: hidden;
-    padding: 0;
-}
+/* DATA I TECHNICY */
+.tech-data { height: 65px; border-bottom: 1px solid #1e293b; border-right: 1px solid #1e293b; font-size: 16px; overflow: hidden; }
+.marquee-box { width: 100%; height: 100%; display: flex; align-items: center; justify-content: flex-start; overflow: hidden; }
+.marquee-box span { display: inline-block; white-space: nowrap; padding: 0 15px; will-change: transform; text-align: left; }
 
-.marquee-box { 
-    width: 100%; 
-    height: 100%; 
-    display: flex; 
-    align-items: center; 
-    justify-content: flex-start; /* Zmienione na START, żeby tekst nie był ucięty na początku */
-    overflow: hidden;
-}
-
-.marquee-box span { 
-    display: inline-block; 
-    white-space: nowrap; 
-    padding: 0 15px; /* Margines bezpieczeństwa */
-    will-change: transform;
-    text-align: left;
-}
-
-/* Animacja startuje od 0, więc nic nie zostanie ucięte */
-.animate-scroll { 
-    animation: smart-scroll 8s linear infinite alternate; 
-}
-
+.animate-scroll { animation: smart-scroll 8s linear infinite alternate; }
 @keyframes smart-scroll {
-  0%, 25% { transform: translateX(0); } /* Dłuższy postój na początku */
+  0%, 25% { transform: translateX(0); } /* Start od początku, czekaj 2 sekundy */
   75%, 100% { transform: translateX(var(--scroll-dist)); }
 }
 
@@ -151,7 +50,4 @@ tr.hidden-weekend { display: none !important; }
 .neon-blue-text { color: #00d2ff !important; font-weight: bold; }
 
 .footer { padding: 40px 20px; text-align: center; color: #475569; font-size: 13px; }
-.refresh-btn { 
-    background: #0ea5e9; color: white; border: none; padding: 16px; 
-    border-radius: 12px; width: 100%; font-weight: bold; margin-bottom: 10px;
-}
+.refresh-btn { background: #0ea5e9; color: white; border: none; padding: 16px; border-radius: 12px; width: 100%; font-weight: bold; }
