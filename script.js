@@ -44,8 +44,8 @@ async function loadData() {
         const todayCSV = `${now.getFullYear()}-${String(now.getMonth() + 1).padStart(2, '0')}-${String(now.getDate()).padStart(2, '0')}`;
         
         let html = "<table>";
-        html += `<colgroup><col style="width: 80px;"><col style="width: 100px;"><col style="width: auto;"><col style="width: auto;"><col style="width: auto;"><col style="width: auto;"></colgroup>`;
-        
+        html += `<colgroup>
+            <col style="width: 70px;">  <col style="width: 90px;">  <col style="width: 180px;"> <col style="width: 180px;"> <col style="width: 180px;"> <col style="width: 180px;"> </colgroup>`;
         let weekCounter = 0;
         rows.forEach((row, i) => {
             if (i > 1 && row[0] && row[0].toLowerCase().includes("poniedziałek")) weekCounter++;
