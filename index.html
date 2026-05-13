@@ -7,13 +7,14 @@
     <link rel="stylesheet" href="style.css">
 </head>
 <body>
-    <div class="wrapper">
+    <div class="main-scroll-container">
+        
         <div class="header">
-            <div class="header-left">
-                <img src="logo.png" alt="Logo" class="header-logo">
+            <img src="logo.png" alt="Logo" class="iphone-logo">
+            <div class="title-box">
                 <div class="title" id="current-month-name">MAJ 2026</div>
+                <div class="time" id="clock">00:00:00</div>
             </div>
-            <div class="time" id="clock">00:00:00</div>
         </div>
 
         <div id="month-nav" class="nav-container"></div>
@@ -21,10 +22,11 @@
         <div id="table-container"></div>
         
         <div class="footer">
-            <button class="refresh-btn" onclick="loadData()">AKTUALIZUJ</button>
-            <span>Ostatnia: <span id="update-time">-</span></span>
+            <button class="refresh-btn" onclick="loadData()">AKTUALIZUJ DANE</button>
+            <p>Ostatnia synchronizacja: <span id="update-time">-</span></p>
         </div>
     </div>
+
     <script src="script.js"></script>
 </body>
 </html>
