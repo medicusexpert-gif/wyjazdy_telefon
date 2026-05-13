@@ -18,9 +18,10 @@ let currentViewMonth = String(new Date().getMonth() + 1).padStart(2, '0');
 
 async function loadData() {
     const tableDiv = document.getElementById("table-container");
-    tableDiv.innerHTML = "<p style='text-align:center; padding:20px;'>Pobieranie...</p>";
+    tableDiv.innerHTML = "<p style='text-align:center; padding:20px; color:white;'>Pobieranie danych...</p>";
     
     const url = sheetLinks[currentViewMonth];
+    // Proxy AllOrigins pomaga ominąć błędy CORS na iPhone
     const proxyUrl = "https://api.allorigins.win/get?url=" + encodeURIComponent(url);
 
     try {
@@ -30,6 +31,7 @@ async function loadData() {
             if (!res.ok) throw new Error();
             rawData = await res.text();
         } catch (e) {
+            console.log("Próba pobrania przez proxy...");
             const resProxy = await fetch(proxyUrl);
             const json = await resProxy.json();
             rawData = json.contents;
@@ -39,23 +41,40 @@ async function loadData() {
         const now = new Date();
         const todayCSV = `${now.getFullYear()}-${String(now.getMonth() + 1).padStart(2, '0')}-${String(now.getDate()).padStart(2, '0')}`;
         
+        // Definicja kolumn: 50px (Dzień), 70px (Data), 4x 300px (Technicy)
         let html = "<table><colgroup><col style='width:50px;'><col style='width:70px;'><col style='width:300px;'><col style='width:300px;'><col style='width:300px;'><col style='width:300px;'></colgroup>";
         
         let weekCounter = 0;
+        let isTbodyOpened = false;
+
         rows.forEach((row, i) => {
+            // Licznik tygodni do kolorowania wierszy (zmiana przy Poniedziałku)
             if (i > 1 && row[0] && row[0].toLowerCase().includes("poniedziałek")) weekCounter++;
+            
             const isToday = row[1] && row[1].trim() === todayCSV;
 
             if (i < 2) {
-                html += "<thead><tr>";
+                // Nagłówki tabeli
+                if (i === 0) html += "<thead>";
+                html += "<tr>";
                 row.forEach((cell, j) => { if(j <= 5) html += `<th>${cell}</th>`; });
-                html += "</tr></thead><tbody>";
+                html += "</tr>";
+                if (i === 1) {
+                    html += "</thead>";
+                    html += "<tbody>";
+                    isTbodyOpened = true;
+                }
             } else {
+                // Wiersze z danymi
                 html += `<tr class="${weekCounter % 2 === 0 ? 'week-even' : 'week-odd'} ${isToday ? 'today-row' : ''}">`;
                 row.forEach((cell, j) => {
                     if (j > 5) return;
                     let content = (j === 0) ? shortenDay(cell) : (j === 1) ? shortenDate(cell) : cell;
-                    if (j > 1 && content.includes("8-16")) content = content.replace(/8-16/i, '<span class="neon-blue-text">8-16</span>');
+                    
+                    // Podświetlanie godzin 8-16
+                    if (j > 1 && content.includes("8-16")) {
+                        content = content.replace(/8-16/i, '<span class="neon-blue-text">8-16</span>');
+                    }
                     
                     html += `<td class="${(j===0)?'day':(j===1)?'date':'tech-data'}">
                                 <div class="marquee-box"><span>${content}</span></div>
@@ -64,14 +83,21 @@ async function loadData() {
                 html += "</tr>";
             }
         });
-        html += "</tbody></table>";
+
+        if (isTbodyOpened) html += "</tbody>";
+        html += "</table>";
+        
         tableDiv.innerHTML = html;
         document.getElementById("update-time").innerText = now.toLocaleTimeString();
         updateClock();
         hideWeekends();
+        
+        // Uruchomienie animacji przewijania po renderowaniu
         setTimeout(initSmartMarquee, 500);
+        
     } catch (err) { 
-        tableDiv.innerHTML = "<p style='color:red; text-align:center;'>Błąd danych. Odśwież stronę.</p>";
+        console.error(err);
+        tableDiv.innerHTML = "<p style='color:red; text-align:center; padding:20px;'>Błąd pobierania danych. Spróbuj odświeżyć stronę przyciskiem poniżej.</p>";
     }
 }
 
@@ -94,25 +120,34 @@ function initSmartMarquee() {
     const spans = document.querySelectorAll('.tech-data span');
     spans.forEach(span => {
         const box = span.parentElement;
+        // Reset
         span.classList.remove('animate-scroll');
-        if (span.offsetWidth > box.offsetWidth - 10) {
+        
+        // Jeśli tekst jest szerszy niż komórka (- margines bezpieczeństwa)
+        if (span.offsetWidth > (box.offsetWidth - 10)) {
             box.style.justifyContent = "flex-start";
-            const distance = span.offsetWidth - box.offsetWidth + 45;
+            // Oblicz dystans przesunięcia + zapas
+            const distance = span.offsetWidth - box.offsetWidth + 40;
             span.style.setProperty('--scroll-dist', `-${distance}px`);
             span.classList.add('animate-scroll');
         } else {
+            // Jeśli tekst jest krótki, centrujemy go
             box.style.justifyContent = "center";
         }
     });
 }
 
 function shortenDay(day) {
-    const days = {"poniedziałek":"Pon","wtorek":"Wt","środa":"Śr","czwartek":"Czw","piątek":"Pt","sobota":"Sob","niedziela":"Nd"};
+    const days = {
+        "poniedziałek": "Pon", "wtorek": "Wt", "środa": "Śr", 
+        "czwartek": "Czw", "piątek": "Pt", "sobota": "Sob", "niedziela": "Nd"
+    };
     return days[day.toLowerCase()] || day;
 }
 
 function shortenDate(dateStr) {
     const parts = dateStr.split("-");
+    // Zamienia YYYY-MM-DD na DD.MM
     return parts.length === 3 ? `${parts[2]}.${parts[1]}` : dateStr;
 }
 
@@ -122,6 +157,7 @@ function hideWeekends() {
         const dayCell = row.querySelector(".day");
         if (dayCell) {
             const text = dayCell.innerText.trim().toLowerCase();
+            // Ukrywanie wierszy weekendowych (display: none via CSS class)
             if (text === "sob" || text === "nd" || text === "sobota" || text === "niedziela") {
                 row.classList.add("hidden-weekend");
             }
@@ -136,9 +172,11 @@ function renderNav() {
         navHtml += `<button id="btn-${m}" class="nav-btn ${m === currentViewMonth ? 'active' : ''}" onclick="changeMonth('${m}')">${monthNames[i-1]}</button>`;
     }
     document.getElementById("month-nav").innerHTML = navHtml;
+    
+    // Automatyczne przewinięcie nawigacji do aktywnego miesiąca
     setTimeout(() => {
         const activeBtn = document.getElementById(`btn-${currentViewMonth}`);
-        if (activeBtn) activeBtn.scrollIntoView({ behavior: 'smooth', inline: 'center' });
+        if (activeBtn) activeBtn.scrollIntoView({ behavior: 'smooth', inline: 'center', block: 'nearest' });
     }, 400);
 }
 
@@ -151,6 +189,7 @@ function changeMonth(m) {
 function updateClock() {
     const clock = document.getElementById("clock");
     if (clock) clock.innerText = new Date().toLocaleTimeString("pl-PL");
+    
     const mHeader = document.getElementById("current-month-name");
     if (mHeader) {
         const monthText = monthNames[parseInt(currentViewMonth) - 1].toUpperCase();
@@ -158,6 +197,7 @@ function updateClock() {
     }
 }
 
+// Inicjalizacja
 renderNav();
 loadData();
 setInterval(updateClock, 1000);
