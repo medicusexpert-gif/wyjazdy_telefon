@@ -18,19 +18,55 @@ let currentViewMonth = String(new Date().getMonth() + 1).padStart(2, '0');
 
 async function loadData() {
     const tableDiv = document.getElementById("table-container");
+    tableDiv.innerHTML = "<p style='text-align:center; padding:50px; color:#38bdf8; font-weight:bold;'>Pobieranie grafiku...</p>";
+    
     const url = sheetLinks[currentViewMonth];
-    const proxyUrl = "https://api.allorigins.win/get?url=" + encodeURIComponent(url);
+    let rawData = null;
 
     try {
-        const response = await fetch(proxyUrl);
-        if (!response.ok) throw new Error("Błąd sieci");
-        const json = await response.json();
-        const rawData = json.contents;
+        // PRÓBA 1: Bezpośrednio (Najszybsza, ale może być zablokowana przez Safari)
+        try {
+            const res1 = await fetch(url, { cache: "no-store" });
+            if (res1.ok) rawData = await res1.text();
+        } catch (e) { console.log("Próba 1 (Bezpośrednia) - nieudana."); }
 
+        // PRÓBA 2: Przez proxy AllOrigins (Omija CORS)
+        if (!rawData) {
+            try {
+                const proxyUrl1 = "https://api.allorigins.win/get?url=" + encodeURIComponent(url);
+                const res2 = await fetch(proxyUrl1, { cache: "no-store" });
+                if (res2.ok) {
+                    const json = await res2.json();
+                    rawData = json.contents;
+                }
+            } catch (e) { console.log("Próba 2 (AllOrigins) - nieudana."); }
+        }
+
+        // PRÓBA 3: Przez proxy Corsproxy (Jeśli AllOrigins jest zablokowane np. przez Adblock)
+        if (!rawData) {
+            try {
+                const proxyUrl2 = "https://corsproxy.io/?" + encodeURIComponent(url);
+                const res3 = await fetch(proxyUrl2, { cache: "no-store" });
+                if (res3.ok) rawData = await res3.text();
+            } catch (e) { console.log("Próba 3 (Corsproxy) - nieudana."); }
+        }
+
+        // Jeśli po 3 próbach dalej nie ma danych:
+        if (!rawData) throw new Error("Wszystkie metody pobierania zawiodły.");
+
+        // Parsowanie i renderowanie
         const rows = rawData.split(/\r?\n/).filter(line => line.trim() !== "").map(parseCSVLine);
         renderTable(rows);
+
     } catch (err) {
-        tableDiv.innerHTML = `<p style="color:red; text-align:center; padding:20px;">Błąd pobierania danych. Spróbuj odświeżyć.</p>`;
+        console.error(err);
+        tableDiv.innerHTML = `
+            <div style="padding: 30px; text-align: center;">
+                <p style="color: #ef4444; font-weight: bold; font-size: 16px;">Nie udało się połączyć z bazą danych.</p>
+                <p style="color: #94a3b8; font-size: 13px;">Upewnij się, że masz włączony internet oraz wyłącz ewentualne blokery reklam (Adblock/VPN).</p>
+                <button onclick="loadData()" style="margin-top:20px; padding:15px; background:#0ea5e9; color:white; border:none; border-radius:10px; width:100%; font-weight:bold;">SPRÓBUJ PONOWNIE</button>
+            </div>
+        `;
     }
 }
 
@@ -57,6 +93,7 @@ function renderTable(rows) {
     let html = `<table><colgroup><col style="width:50px;"><col style="width:70px;"><col style="width:300px;"><col style="width:300px;"><col style="width:300px;"><col style="width:300px;"></colgroup>`;
     
     let weekCounter = 0;
+    
     rows.forEach((row, i) => {
         if (i > 1 && row[0] && row[0].toLowerCase().includes("poniedziałek")) weekCounter++;
         const isToday = row[1] && row[1].trim() === todayStr;
@@ -83,19 +120,26 @@ function renderTable(rows) {
     
     html += "</tbody></table>";
     tableDiv.innerHTML = html;
+    
     updateHeader();
-    setTimeout(initMarquee, 300);
+    setTimeout(hideWeekends, 100);
+    setTimeout(initMarquee, 400);
 }
 
 function initMarquee() {
     const spans = document.querySelectorAll('.tech-data span');
     spans.forEach(span => {
         const box = span.parentElement;
-        if (span.offsetWidth > (box.offsetWidth - 10)) {
-            const dist = span.offsetWidth - box.offsetWidth + 40;
+        span.classList.remove('animate-scroll'); // Reset
+        
+        const textW = span.getBoundingClientRect().width;
+        const boxW = box.getBoundingClientRect().width;
+
+        if (textW > (boxW - 5)) {
+            box.style.justifyContent = "flex-start";
+            const dist = textW - boxW + 45;
             span.style.setProperty('--scroll-dist', `-${dist}px`);
             span.classList.add('animate-scroll');
-            box.style.justifyContent = "flex-start";
         } else {
             box.style.justifyContent = "center";
         }
@@ -115,16 +159,21 @@ function shortenDate(dateStr) {
 function updateHeader() {
     const mHeader = document.getElementById("current-month-name");
     mHeader.innerText = `${monthNames[parseInt(currentViewMonth)-1].toUpperCase()} 2026`;
-    document.getElementById("update-time").innerText = new Date().toLocaleTimeString();
+    document.getElementById("update-time").innerText = new Date().toLocaleTimeString("pl-PL");
 }
 
 function renderNav() {
     let navHtml = "";
     monthNames.forEach((name, i) => {
         const m = String(i + 1).padStart(2, '0');
-        navHtml += `<button class="nav-btn ${m === currentViewMonth ? 'active' : ''}" onclick="changeMonth('${m}')">${name}</button>`;
+        navHtml += `<button id="btn-${m}" class="nav-btn ${m === currentViewMonth ? 'active' : ''}" onclick="changeMonth('${m}')">${name}</button>`;
     });
     document.getElementById("month-nav").innerHTML = navHtml;
+
+    setTimeout(() => {
+        const activeBtn = document.getElementById(`btn-${currentViewMonth}`);
+        if (activeBtn) activeBtn.scrollIntoView({ behavior: 'smooth', inline: 'center' });
+    }, 300);
 }
 
 function changeMonth(m) {
@@ -134,21 +183,24 @@ function changeMonth(m) {
 }
 
 function updateClock() {
-    document.getElementById("clock").innerText = new Date().toLocaleTimeString();
+    const clk = document.getElementById("clock");
+    if(clk) clk.innerText = new Date().toLocaleTimeString("pl-PL");
 }
 
 function hideWeekends() {
-    // Weekendy są ukrywane wewnątrz renderTable za pomocą klasy .hidden-weekend
     const rows = document.querySelectorAll("table tr");
     rows.forEach(row => {
         const d = row.querySelector(".day");
-        if (d && (d.innerText === "Sob" || d.innerText === "Nd")) row.classList.add("hidden-weekend");
+        if (d) {
+            const t = d.innerText.toLowerCase();
+            if (t === "sob" || t === "nd" || t.includes("sobota") || t.includes("niedziela")) {
+                row.classList.add("hidden-weekend");
+            }
+        }
     });
 }
 
-// Start
+// Inicjalizacja
 renderNav();
 loadData();
 setInterval(updateClock, 1000);
-// Co 5 minut ukrywaj weekendy po przeładowaniu danych
-setInterval(hideWeekends, 2000);
