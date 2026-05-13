@@ -1,90 +1,104 @@
 * { box-sizing: border-box; }
+
 body { 
     margin: 0; 
     background: #020617; 
     color: white; 
-    font-family: -apple-system, BlinkMacSystemFont, sans-serif; 
-    /* Odblokowujemy naturalne przewijanie całego ekranu */
-    overflow-x: hidden; 
-    overflow-y: auto; 
+    font-family: -apple-system, sans-serif; 
+    /* Pozwalamy na normalne przewijanie strony */
+    overflow-x: hidden;
+    overflow-y: auto;
     height: auto; 
 }
 
-.wrapper { 
-    display: flex; 
+.main-scroll-container {
+    display: flex;
     flex-direction: column;
-    padding-left: env(safe-area-inset-left);
-    padding-right: env(safe-area-inset-right);
-    padding-bottom: 40px; /* Miejsce na dole strony */
+    min-height: 100vh;
+    padding-bottom: 50px;
 }
 
-/* Nagłówek */
+/* Nagłówek - prosty, bez blokowania */
 .header {
     background: #0f172a;
-    padding: 15px;
+    padding: 20px 15px;
     display: flex;
-    justify-content: space-between;
     align-items: center;
+    gap: 15px;
     border-bottom: 1px solid #1e293b;
 }
 
-.header-left { display: flex; align-items: center; gap: 12px; }
-.header-logo { height: 25px; width: auto; }
-.title { font-size: 18px; font-weight: bold; color: #38bdf8; }
-.time { font-size: 18px; font-family: monospace; color: #94a3b8; }
+.iphone-logo {
+    height: 40px;
+    width: auto;
+}
 
-/* Zakładki miesięcy - teraz w jednej linii, przewijane w poziomie */
+.title-box { display: flex; flex-direction: column; }
+.title { font-size: 20px; font-weight: bold; color: #38bdf8; }
+.time { font-size: 14px; color: #94a3b8; font-family: monospace; }
+
+/* Nawigacja miesięcy - w jednej linii, przewijana w bok */
 .nav-container { 
     display: flex; 
-    flex-wrap: nowrap; /* Wymuszamy jedną linię */
-    overflow-x: auto;  /* Pozwalamy przesuwać miesiące lewo-prawo */
-    padding: 10px 5px; 
-    gap: 5px; 
+    overflow-x: auto; 
+    white-space: nowrap;
+    padding: 12px 5px; 
     background: #020617;
-    -webkit-overflow-scrolling: touch; /* Płynność na iPhone */
+    -webkit-overflow-scrolling: touch;
     border-bottom: 1px solid #1e293b;
 }
-
-/* Ukrywamy pasek przewijania dla miesięcy, żeby wyglądało czyściej */
 .nav-container::-webkit-scrollbar { display: none; }
 
 .nav-btn { 
-    flex: 0 0 auto; /* Przycisk nie zmienia rozmiaru */
+    display: inline-block;
+    flex: 0 0 auto;
     background: #1e293b; 
     color: #94a3b8; 
     border: 1px solid #334155; 
-    padding: 8px 15px; 
-    font-size: 13px; 
-    border-radius: 6px; 
-    white-space: nowrap;
+    padding: 10px 18px; 
+    margin-right: 6px;
+    font-size: 14px; 
+    border-radius: 8px; 
 }
 .nav-btn.active { color: #00ff00; border-color: #00ff00; background: #064e3b; }
 
-/* Tabela - teraz nie ma własnego scrolla, jest częścią strony */
+/* Tabela - brak blokad wysokości */
 #table-container { 
     width: 100%;
-    overflow-x: auto; /* Tabela wciąż może być szersza niż ekran (zoom) */
+    overflow-x: auto; /* Tabela może być szeroka (zoom) */
 }
-table { width: 100%; border-collapse: collapse; min-width: 650px; }
+
+table { 
+    width: 100%; 
+    border-collapse: collapse; 
+    min-width: 700px; /* Żeby na iPhone nie była za ciasna */
+}
 
 th { 
     background: #1e293b; 
     color: #94a3b8; 
-    font-size: 11px; 
-    padding: 12px 4px; 
-    text-transform: uppercase;
+    font-size: 12px; 
+    padding: 15px 5px; 
+    text-align: center;
 }
 
 .tech-data { 
-    height: 50px; /* Nieco wyższe wiersze pod palec */
+    height: 55px; 
     border: 1px solid #1e293b; 
-    text-align: center; 
-    font-size: 15px;
+    font-size: 16px;
+    text-align: center;
 }
 
-/* Animacja Marquee */
+.day { width: 50px; font-weight: bold; color: #64748b; }
+.date { width: 60px; font-weight: bold; color: #38bdf8; }
+
+.week-odd { background: #0f172a; }
+.week-even { background: #020617; }
+.today-row { background: #164e63 !important; border: 2px solid #22d3ee; }
+
+/* Animacje */
 .marquee-box { width: 100%; height: 100%; display: flex; align-items: center; overflow: hidden; }
-.marquee-box span { display: inline-block; white-space: nowrap; padding: 0 10px; will-change: transform; }
+.marquee-box span { display: inline-block; white-space: nowrap; padding: 0 10px; }
 .animate-scroll { animation: smart-scroll 8s linear infinite alternate; }
 
 @keyframes smart-scroll {
@@ -92,28 +106,16 @@ th {
   80%, 100% { transform: translateX(var(--scroll-dist)); }
 }
 
-.day { width: 50px; font-size: 12px; font-weight: bold; text-align: center; color: #64748b; }
-.date { width: 60px; font-size: 12px; font-weight: bold; text-align: center; color: #38bdf8; }
-.week-odd { background: #0f172a; }
-.week-even { background: #020617; }
-.today-row { background: #064e3b !important; }
+.neon-blue-text { color: #00d2ff; font-weight: bold; }
 
-/* Stopka */
-.footer { 
-    padding: 20px 15px; 
-    display: flex; 
-    flex-direction: column;
-    align-items: center;
-    gap: 10px;
-    font-size: 12px; 
-    color: #475569;
-}
+.footer { padding: 30px 20px; text-align: center; color: #475569; font-size: 13px; }
 .refresh-btn { 
     background: #0ea5e9; 
     color: white; 
     border: none; 
-    padding: 12px 30px; 
-    border-radius: 8px; 
+    padding: 15px; 
+    border-radius: 10px; 
+    width: 100%; 
     font-weight: bold; 
-    width: 100%; /* Duży przycisk łatwy do kliknięcia */
+    margin-bottom: 10px;
 }
