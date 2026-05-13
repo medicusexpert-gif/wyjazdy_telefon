@@ -112,19 +112,13 @@ async function loadData() {
         if (logoCont) logoCont.innerHTML = `<img src="${logoUrl}" alt="Logo" class="table-logo">`;
 
         document.getElementById("update-time").innerText = new Date().toLocaleTimeString();
+        updateClock(); // Odśwież nagłówek miesiąca
         hideWeekends();
-        setTimeout(initSmartMarquee, 500);
+        setTimeout(initSmartMarquee, 600);
     } catch (err) { 
         console.error("Błąd CSV:", err); 
         setTimeout(loadData, 10000);
     }
-}
-
-function activateAndRefresh() {
-    const elem = document.documentElement;
-    if (elem.requestFullscreen) elem.requestFullscreen();
-    else if (elem.webkitRequestFullscreen) elem.webkitRequestFullscreen();
-    loadData();
 }
 
 function initSmartMarquee() {
@@ -132,10 +126,13 @@ function initSmartMarquee() {
     spans.forEach(span => {
         const box = span.parentElement;
         span.classList.remove('animate-scroll');
-        if (span.offsetWidth > box.offsetWidth) {
+        // Reset transformacji przed obliczeniem
+        span.style.transform = "translateX(0)";
+        
+        if (span.offsetWidth > (box.offsetWidth - 5)) {
             box.style.justifyContent = "flex-start";
-            const distance = span.offsetWidth - box.offsetWidth + 20; 
-            span.style.setProperty('--scroll-dist', `-\${distance}px`);
+            const distance = span.offsetWidth - box.offsetWidth + 30; 
+            span.style.setProperty('--scroll-dist', `-${distance}px`);
             span.classList.add('animate-scroll');
         } else {
             box.style.justifyContent = "center";
@@ -150,7 +147,8 @@ function shortenDay(day) {
 
 function shortenDate(dateStr) {
     const parts = dateStr.split("-");
-    return parts.length === 3 ? `\${parts[2]}.\${parts[1]}` : dateStr;
+    // Zmieniamy RRRR-MM-DD na DD.MM
+    return parts.length === 3 ? `${parts[2]}.${parts[1]}` : dateStr;
 }
 
 function hideWeekends() {
@@ -165,7 +163,7 @@ function renderNav() {
     let navHtml = "";
     for (let i = 1; i <= 12; i++) {
         const m = String(i).padStart(2, '0');
-        navHtml += `<button class="nav-btn \${m === currentViewMonth ? 'active' : ''}" onclick="changeMonth('\${m}')">\${monthNames[i-1]}</button>`;
+        navHtml += `<button class="nav-btn ${m === currentViewMonth ? 'active' : ''}" onclick="changeMonth('${m}')">${monthNames[i-1]}</button>`;
     }
     document.getElementById("month-nav").innerHTML = navHtml;
 }
@@ -180,8 +178,20 @@ function updateClock() {
     const clock = document.getElementById("clock");
     const now = new Date();
     if (clock) clock.innerText = now.toLocaleTimeString("pl-PL");
+    
+    // NAPRAWA NAGŁÓWKA:
     const monthHeader = document.getElementById("current-month-name");
-    if (monthHeader) monthHeader.innerText = `\${monthNames[parseInt(currentViewMonth)-1].toUpperCase()} 2026`;
+    if (monthHeader) {
+        const selectedMonthIndex = parseInt(currentViewMonth) - 1;
+        monthHeader.innerText = `${monthNames[selectedMonthIndex].toUpperCase()} 2026`;
+    }
+}
+
+function activateAndRefresh() {
+    const elem = document.documentElement;
+    if (elem.requestFullscreen) elem.requestFullscreen();
+    else if (elem.webkitRequestFullscreen) elem.webkitRequestFullscreen();
+    loadData();
 }
 
 renderNav();
