@@ -120,20 +120,23 @@ function initSmartMarquee() {
     const spans = document.querySelectorAll('.tech-data span');
     spans.forEach(span => {
         const box = span.parentElement;
-        // Reset
         span.classList.remove('animate-scroll');
         
-        // Jeśli tekst jest szerszy niż komórka (- margines bezpieczeństwa)
-        if (span.offsetWidth > (box.offsetWidth - 10)) {
+        // Sprawdzamy realną szerokość
+        const textWidth = span.getBoundingClientRect().width;
+        const boxWidth = box.getBoundingClientRect().width;
+
+        if (textWidth > (boxWidth - 5)) {
             box.style.justifyContent = "flex-start";
-            // Oblicz dystans przesunięcia + zapas
-            const distance = span.offsetWidth - box.offsetWidth + 40;
+            // Zwiększony dystans, by tekst całkiem "wyszedł" zza krawędzi
+            const distance = textWidth - boxWidth + 40;
             span.style.setProperty('--scroll-dist', `-${distance}px`);
             span.classList.add('animate-scroll');
         } else {
-            // Jeśli tekst jest krótki, centrujemy go
             box.style.justifyContent = "center";
         }
+    });
+}
     });
 }
 
