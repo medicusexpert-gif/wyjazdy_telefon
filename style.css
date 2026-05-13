@@ -18,7 +18,7 @@ body {
 }
 
 .header {
-    min-height: 60px;
+    height: 8vh;
     display: flex;
     justify-content: space-between;
     align-items: center;
@@ -31,7 +31,7 @@ body {
 .nav-container { display: flex; gap: 4px; flex-wrap: wrap; justify-content: center; flex-grow: 1; }
 
 .time-box { display: flex; align-items: center; gap: 15px; min-width: 200px; justify-content: flex-end; }
-.time { font-size: 3vh; font-family: 'Courier New', monospace; font-weight: bold; color: #ffffff; }
+.time { font-size: 3.5vh; font-family: 'Courier New', monospace; font-weight: bold; color: #ffffff; }
 
 #table-container { flex-grow: 1; overflow: auto; -webkit-overflow-scrolling: touch; }
 table { width: 100%; border-collapse: separate; border-spacing: 2px; table-layout: fixed; min-width: 850px; }
@@ -39,12 +39,38 @@ table { width: 100%; border-collapse: separate; border-spacing: 2px; table-layou
 .nav-btn { background: #1e293b; color: #94a3b8; border: 1px solid #334155; padding: 5px 8px; font-size: 11px; cursor: pointer; border-radius: 4px; }
 .nav-btn.active { color: #00ff00; border-color: #00ff00; background: #064e3b; }
 
-th { background: #1e293b; text-transform: uppercase; padding: 6px 2px; }
+/* USZTYWNIENIE NAGŁÓWKA */
+tr:nth-child(1), tr:nth-child(2) {
+    height: 4.5vh !important;
+}
+
+.logo-space, .logo-space-empty, .logo-space-filler {
+    background: #1e293b !important;
+    position: relative;
+    overflow: visible;
+}
+
+.table-logo {
+    position: absolute;
+    top: 100%; /* Centruje logo między 1 a 2 wierszem */
+    left: 100%; /* Centruje logo między 1 a 2 kolumną */
+    transform: translate(-50%, -50%);
+    width: 130px; 
+    height: auto;
+    max-height: 8vh;
+    object-fit: contain;
+    z-index: 100;
+}
+
+th { background: #1e293b; text-transform: uppercase; padding: 0; }
+
+/* USZTYWNIENIE KOMÓREK DANYCH */
 .tech-data { 
     text-align: center; 
     font-size: 2.2vh; 
     border: 1px solid #334155; 
-    height: 4.5vh;
+    height: 5vh;
+    max-height: 5vh;
 }
 
 .marquee-box { 
@@ -59,7 +85,8 @@ th { background: #1e293b; text-transform: uppercase; padding: 6px 2px; }
     display: inline-block; 
     white-space: nowrap; 
     padding: 0 10px;
-    will-change: transform; /* Optymalizacja dla iPhone */
+    color: inherit;
+    will-change: transform;
 }
 
 .animate-scroll { 
@@ -77,14 +104,19 @@ th { background: #1e293b; text-transform: uppercase; padding: 6px 2px; }
     font-weight: bold !important;
 }
 
-/* Wygaszenie dni spoza miesiąca */
 .day, .date { font-size: 1.8vh; text-align: center; font-weight: bold; }
 .week-odd td { background: #0f172a; }
 .week-even td { background: #1e293b; }
 
-/* Mobilne poprawki */
+.today-row td {
+    background-color: rgba(0, 150, 0, 0.25) !important;
+    border-top: 2px solid #00ff00 !important;
+    border-bottom: 2px solid #00ff00 !important;
+}
+
 @media (max-width: 900px) {
     .title { font-size: 16px; }
     .time { font-size: 18px; }
-    .tech-data { font-size: 15px; }
+    .tech-data { font-size: 15px; height: 40px; }
+    .table-logo { width: 100px; }
 }
