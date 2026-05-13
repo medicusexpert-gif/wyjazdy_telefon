@@ -42,38 +42,25 @@ async function loadData() {
         const todayCSV = `${now.getFullYear()}-${String(now.getMonth() + 1).padStart(2, '0')}-${String(now.getDate()).padStart(2, '0')}`;
         
         let html = "<table>";
-        html += `<colgroup>
-            <col style="width: 50px;">
-            <col style="width: 60px;">
-            <col style="width: 120px;">
-            <col style="width: 120px;">
-            <col style="width: 120px;">
-            <col style="width: 120px;">
-        </colgroup>`;
+        html += `<colgroup><col style="width:50px;"><col style="width:60px;"><col style="width:150px;"><col style="width:150px;"><col style="width:150px;"><col style="width:150px;"></colgroup>`;
         
         let weekCounter = 0;
         rows.forEach((row, i) => {
             if (i > 1 && row[0] && row[0].toLowerCase().includes("poniedziałek")) weekCounter++;
             const isToday = row[1] && row[1].trim() === todayCSV;
-            
+
             if (i < 2) {
-                html += "<thead><tr>";
-                row.forEach((cell, j) => {
-                    if (j <= 5) html += `<th>${cell}</th>`;
-                });
-                html += "</tr></thead>";
+                html += `<thead><tr>`;
+                row.forEach((cell, j) => { if(j <= 5) html += `<th>${cell}</th>`; });
+                html += `</tr></thead>`;
             } else {
                 html += `<tr class="${weekCounter % 2 === 0 ? 'week-even' : 'week-odd'} ${isToday ? 'today-row' : ''}">`;
                 row.forEach((cell, j) => {
                     if (j > 5) return;
-                    let className = (j === 0) ? "day" : (j === 1) ? "date" : "tech-data";
                     let content = (j === 0) ? shortenDay(cell) : (j === 1) ? shortenDate(cell) : cell;
+                    if (j > 1 && content.includes("8-16")) content = content.replace(/8-16/i, '<span class="neon-blue-text">8-16</span>');
                     
-                    if (j > 1 && content.includes("8-16")) {
-                        content = content.replace(/8-16/i, '<span class="neon-blue-text">8-16</span>');
-                    }
-                    
-                    html += `<td class="${className}">
+                    html += `<td class="${(j===0)?'day':(j===1)?'date':'tech-data'}">
                                 <div class="marquee-box"><span>${content}</span></div>
                              </td>`;
                 });
@@ -93,7 +80,6 @@ function initSmartMarquee() {
     const spans = document.querySelectorAll('.tech-data span');
     spans.forEach(span => {
         const box = span.parentElement;
-        span.classList.remove('animate-scroll');
         if (span.offsetWidth > box.offsetWidth) {
             const distance = span.offsetWidth - box.offsetWidth + 20;
             span.style.setProperty('--scroll-dist', `-${distance}px`);
@@ -124,22 +110,13 @@ function renderNav() {
     let navHtml = "";
     for (let i = 1; i <= 12; i++) {
         const m = String(i).padStart(2, '0');
-        // DODAJEMY TUTAJ: id="btn-${m}"
         navHtml += `<button id="btn-${m}" class="nav-btn ${m === currentViewMonth ? 'active' : ''}" onclick="changeMonth('${m}')">${monthNames[i-1]}</button>`;
     }
     document.getElementById("month-nav").innerHTML = navHtml;
-    
-    // To jest ta nowa część - przewijanie do aktywnego miesiąca
     setTimeout(() => {
         const activeBtn = document.getElementById(`btn-${currentViewMonth}`);
-        if (activeBtn) {
-            activeBtn.scrollIntoView({ 
-                behavior: 'smooth', 
-                inline: 'center', 
-                block: 'nearest' 
-            });
-        }
-    }, 300);
+        if (activeBtn) activeBtn.scrollIntoView({ behavior: 'smooth', inline: 'center' });
+    }, 400);
 }
 
 function changeMonth(m) {
@@ -151,8 +128,8 @@ function changeMonth(m) {
 function updateClock() {
     const clock = document.getElementById("clock");
     if (clock) clock.innerText = new Date().toLocaleTimeString("pl-PL");
-    const monthHeader = document.getElementById("current-month-name");
-    if (monthHeader) monthHeader.innerText = `${monthNames[parseInt(currentViewMonth)-1].toUpperCase()} 2026`;
+    const mHeader = document.getElementById("current-month-name");
+    if (mHeader) mHeader.innerText = `${monthNames[parseInt(currentViewMonth)-1].toUpperCase()} 2026`;
 }
 
 renderNav();
