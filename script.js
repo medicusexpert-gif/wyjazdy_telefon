@@ -18,10 +18,9 @@ let currentViewMonth = String(new Date().getMonth() + 1).padStart(2, '0');
 
 async function loadData() {
     const tableDiv = document.getElementById("table-container");
-    tableDiv.innerHTML = "<p style='text-align:center; padding:20px;'>Pobieranie danych...</p>";
+    tableDiv.innerHTML = "<p style='text-align:center; padding:20px;'>Pobieranie...</p>";
     
     const url = sheetLinks[currentViewMonth];
-    // Używamy proxy, jeśli zwykły fetch zawiedzie (częsty problem na Safari)
     const proxyUrl = "https://api.allorigins.win/get?url=" + encodeURIComponent(url);
 
     try {
@@ -31,7 +30,6 @@ async function loadData() {
             if (!res.ok) throw new Error();
             rawData = await res.text();
         } catch (e) {
-            console.log("Próba przez proxy...");
             const resProxy = await fetch(proxyUrl);
             const json = await resProxy.json();
             rawData = json.contents;
@@ -41,7 +39,7 @@ async function loadData() {
         const now = new Date();
         const todayCSV = `${now.getFullYear()}-${String(now.getMonth() + 1).padStart(2, '0')}-${String(now.getDate()).padStart(2, '0')}`;
         
-        let html = "<table><colgroup><col style='width:70px;'><col style='width:90px;'><col style='width:300px;'><col style='width:300px;'><col style='width:300px;'><col style='width:300px;'></colgroup>";
+        let html = "<table><colgroup><col style='width:50px;'><col style='width:70px;'><col style='width:300px;'><col style='width:300px;'><col style='width:300px;'><col style='width:300px;'></colgroup>";
         
         let weekCounter = 0;
         rows.forEach((row, i) => {
@@ -73,7 +71,7 @@ async function loadData() {
         hideWeekends();
         setTimeout(initSmartMarquee, 500);
     } catch (err) { 
-        tableDiv.innerHTML = "<p style='color:red; text-align:center;'>Błąd pobierania. Sprawdź internet lub link Google Sheets.</p>";
+        tableDiv.innerHTML = "<p style='color:red; text-align:center;'>Błąd danych. Odśwież stronę.</p>";
     }
 }
 
@@ -97,9 +95,9 @@ function initSmartMarquee() {
     spans.forEach(span => {
         const box = span.parentElement;
         span.classList.remove('animate-scroll');
-        if (span.offsetWidth > box.offsetWidth - 5) {
+        if (span.offsetWidth > box.offsetWidth - 10) {
             box.style.justifyContent = "flex-start";
-            const distance = span.offsetWidth - box.offsetWidth + 40;
+            const distance = span.offsetWidth - box.offsetWidth + 45;
             span.style.setProperty('--scroll-dist', `-${distance}px`);
             span.classList.add('animate-scroll');
         } else {
@@ -154,7 +152,10 @@ function updateClock() {
     const clock = document.getElementById("clock");
     if (clock) clock.innerText = new Date().toLocaleTimeString("pl-PL");
     const mHeader = document.getElementById("current-month-name");
-    if (mHeader) mHeader.innerText = `${monthNames[parseInt(currentViewMonth)-1].toUpperCase()} 2026`;
+    if (mHeader) {
+        const monthText = monthNames[parseInt(currentViewMonth) - 1].toUpperCase();
+        mHeader.innerText = `${monthText} 2026`;
+    }
 }
 
 renderNav();
