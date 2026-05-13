@@ -124,9 +124,22 @@ function renderNav() {
     let navHtml = "";
     for (let i = 1; i <= 12; i++) {
         const m = String(i).padStart(2, '0');
-        navHtml += `<button class="nav-btn ${m === currentViewMonth ? 'active' : ''}" onclick="changeMonth('${m}')">${monthNames[i-1]}</button>`;
+        // DODAJEMY TUTAJ: id="btn-${m}"
+        navHtml += `<button id="btn-${m}" class="nav-btn ${m === currentViewMonth ? 'active' : ''}" onclick="changeMonth('${m}')">${monthNames[i-1]}</button>`;
     }
     document.getElementById("month-nav").innerHTML = navHtml;
+    
+    // To jest ta nowa część - przewijanie do aktywnego miesiąca
+    setTimeout(() => {
+        const activeBtn = document.getElementById(`btn-${currentViewMonth}`);
+        if (activeBtn) {
+            activeBtn.scrollIntoView({ 
+                behavior: 'smooth', 
+                inline: 'center', 
+                block: 'nearest' 
+            });
+        }
+    }, 300);
 }
 
 function changeMonth(m) {
