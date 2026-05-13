@@ -1,13 +1,17 @@
-* { box-sizing: border-box; }
+/* RESET I PODSTAWA */
+* { 
+    box-sizing: border-box; 
+    -webkit-tap-highlight-color: transparent; /* Usuwa szary błysk przy klikaniu na iPhone */
+}
 
 body { 
     margin: 0; 
     background: #020617; 
     color: white; 
-    font-family: -apple-system, sans-serif; 
-    /* Pozwalamy na normalne przewijanie strony */
-    overflow-x: hidden;
-    overflow-y: auto;
+    font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif; 
+    /* Odblokowujemy naturalne przewijanie pionowe całego ekranu */
+    overflow-x: hidden; 
+    overflow-y: auto; 
     height: auto; 
 }
 
@@ -15,10 +19,10 @@ body {
     display: flex;
     flex-direction: column;
     min-height: 100vh;
-    padding-bottom: 50px;
+    padding-bottom: env(safe-area-inset-bottom); /* Bezpieczna strefa na dole iPhone */
 }
 
-/* Nagłówek - prosty, bez blokowania */
+/* NAGŁÓWEK Z LOGO */
 .header {
     background: #0f172a;
     padding: 20px 15px;
@@ -29,93 +33,170 @@ body {
 }
 
 .iphone-logo {
-    height: 40px;
+    height: 35px;
     width: auto;
+    object-fit: contain;
 }
 
 .title-box { display: flex; flex-direction: column; }
-.title { font-size: 20px; font-weight: bold; color: #38bdf8; }
+.title { font-size: 19px; font-weight: bold; color: #38bdf8; text-transform: uppercase; }
 .time { font-size: 14px; color: #94a3b8; font-family: monospace; }
 
-/* Nawigacja miesięcy - w jednej linii, przewijana w bok */
+/* NAWIGACJA MIESIĘCY - PRZEWIJANA POZIOMO */
 .nav-container { 
     display: flex; 
     overflow-x: auto; 
     white-space: nowrap;
-    padding: 12px 5px; 
+    padding: 12px 10px; 
     background: #020617;
-    -webkit-overflow-scrolling: touch;
+    -webkit-overflow-scrolling: touch; /* Płynny scroll na iPhone */
     border-bottom: 1px solid #1e293b;
+    gap: 8px;
 }
-.nav-container::-webkit-scrollbar { display: none; }
+.nav-container::-webkit-scrollbar { display: none; } /* Ukrywamy pasek scrolla */
 
 .nav-btn { 
-    display: inline-block;
     flex: 0 0 auto;
     background: #1e293b; 
     color: #94a3b8; 
     border: 1px solid #334155; 
-    padding: 10px 18px; 
-    margin-right: 6px;
+    padding: 10px 16px; 
     font-size: 14px; 
     border-radius: 8px; 
 }
-.nav-btn.active { color: #00ff00; border-color: #00ff00; background: #064e3b; }
+.nav-btn.active { 
+    color: #00ff00; 
+    border-color: #00ff00; 
+    background: #064e3b; 
+    font-weight: bold;
+}
 
-/* Tabela - brak blokad wysokości */
+/* KONTENER TABELI */
 #table-container { 
     width: 100%;
-    overflow-x: auto; /* Tabela może być szeroka (zoom) */
+    overflow-x: auto; /* Pozwala przesuwać tabelę lewo-prawo */
+    -webkit-overflow-scrolling: touch;
 }
 
 table { 
     width: 100%; 
-    border-collapse: collapse; 
-    min-width: 700px; /* Żeby na iPhone nie była za ciasna */
+    border-collapse: separate; /* Ważne dla sticky columns */
+    border-spacing: 0;
+    min-width: 750px; /* Szerokość zapewniająca czytelność techników */
 }
 
+/* STICKY HEADER (Nagłówki kolumn zostają u góry) */
 th { 
     background: #1e293b; 
     color: #94a3b8; 
     font-size: 12px; 
     padding: 15px 5px; 
     text-align: center;
+    position: sticky;
+    top: 0;
+    z-index: 30; /* Najwyższy priorytet */
+    border-bottom: 1px solid #334155;
 }
 
+/* STICKY COLUMNS (Blokowanie Dnia i Daty) */
+
+/* Pierwsza kolumna: Dzień */
+th:nth-child(1), 
+td:nth-child(1) {
+    position: sticky;
+    left: 0;
+    z-index: 20;
+    width: 50px;
+    min-width: 50px;
+    border-right: 1px solid #334155;
+}
+
+/* Druga kolumna: Data */
+th:nth-child(2), 
+td:nth-child(2) {
+    position: sticky;
+    left: 50px; /* Szerokość pierwszej kolumny */
+    z-index: 20;
+    width: 65px;
+    min-width: 65px;
+    border-right: 3px solid #38bdf8; /* Grubsza linia oddzielająca daty od reszty */
+}
+
+/* Tła dla zablokowanych kolumn (muszą być nieprzezroczyste) */
+td.day, td.date {
+    background-color: #0f172a; 
+}
+.week-even td.day, .week-even td.date {
+    background-color: #020617;
+}
+.today-row td.day, .today-row td.date {
+    background-color: #164e63 !important;
+}
+
+/* STYLE KOMÓREK */
 .tech-data { 
     height: 55px; 
-    border: 1px solid #1e293b; 
+    border-bottom: 1px solid #1e293b; 
+    border-right: 1px solid #1e293b;
     font-size: 16px;
     text-align: center;
 }
 
-.day { width: 50px; font-weight: bold; color: #64748b; }
-.date { width: 60px; font-weight: bold; color: #38bdf8; }
+.day { font-weight: bold; color: #64748b; font-size: 13px; text-align: center; }
+.date { font-weight: bold; color: #38bdf8; font-size: 13px; text-align: center; }
 
 .week-odd { background: #0f172a; }
 .week-even { background: #020617; }
-.today-row { background: #164e63 !important; border: 2px solid #22d3ee; }
+.today-row { background: #164e63 !important; }
+.today-row td { border-top: 1px solid #22d3ee; border-bottom: 1px solid #22d3ee; }
 
-/* Animacje */
-.marquee-box { width: 100%; height: 100%; display: flex; align-items: center; overflow: hidden; }
-.marquee-box span { display: inline-block; white-space: nowrap; padding: 0 10px; }
-.animate-scroll { animation: smart-scroll 8s linear infinite alternate; }
-
-@keyframes smart-scroll {
-  0%, 20% { transform: translateX(0); }
-  80%, 100% { transform: translateX(var(--scroll-dist)); }
+/* ANIMACJA MARQUEE (Pływający tekst) */
+.marquee-box { 
+    width: 100%; 
+    height: 100%; 
+    display: flex; 
+    align-items: center; 
+    overflow: hidden; 
+}
+.marquee-box span { 
+    display: inline-block; 
+    white-space: nowrap; 
+    padding: 0 12px; 
+    will-change: transform;
+}
+.animate-scroll { 
+    animation: smart-scroll 8s linear infinite alternate; 
 }
 
-.neon-blue-text { color: #00d2ff; font-weight: bold; }
+@keyframes smart-scroll {
+  0%, 15% { transform: translateX(0); }
+  85%, 100% { transform: translateX(var(--scroll-dist)); }
+}
 
-.footer { padding: 30px 20px; text-align: center; color: #475569; font-size: 13px; }
+/* KOLORY SPECJALNE */
+.neon-blue-text { 
+    color: #00d2ff !important; 
+    font-weight: bold; 
+    text-shadow: 0 0 5px #0044ff;
+}
+
+/* STOPKA */
+.footer { 
+    padding: 40px 20px; 
+    text-align: center; 
+    color: #475569; 
+    font-size: 13px;
+    background: #020617;
+}
 .refresh-btn { 
     background: #0ea5e9; 
     color: white; 
     border: none; 
-    padding: 15px; 
-    border-radius: 10px; 
+    padding: 16px; 
+    border-radius: 12px; 
     width: 100%; 
     font-weight: bold; 
-    margin-bottom: 10px;
+    font-size: 16px;
+    margin-bottom: 12px;
+    box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.3);
 }
