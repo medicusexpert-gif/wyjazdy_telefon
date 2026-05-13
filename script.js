@@ -14,7 +14,6 @@ const sheetLinks = {
 };
 
 const monthNames = ["Styczeń", "Luty", "Marzec", "Kwiecień", "Maj", "Czerwiec", "Lipiec", "Sierpień", "Wrzesień", "Październik", "Listopad", "Grudzień"];
-const logoUrl = "logo.png";
 let currentViewMonth = String(new Date().getMonth() + 1).padStart(2, '0');
 
 function parseCSVLine(line) {
@@ -40,101 +39,54 @@ async function loadData() {
         const rows = rawData.split(/\r?\n/).filter(line => line.trim() !== "").map(parseCSVLine);
 
         const now = new Date();
-        const isAlarmTime = (now.getHours() > 15) || (now.getHours() === 15 && now.getMinutes() >= 30);
         const todayCSV = `${now.getFullYear()}-${String(now.getMonth() + 1).padStart(2, '0')}-${String(now.getDate()).padStart(2, '0')}`;
         
         let html = "<table>";
-        // Sztywne kolumny, żeby nic nie skakało
         html += `<colgroup>
-            <col style="width: 70px;">
-            <col style="width: 90px;">
-            <col style="width: auto;">
-            <col style="width: auto;">
-            <col style="width: auto;">
-            <col style="width: auto;">
+            <col style="width: 50px;">
+            <col style="width: 60px;">
+            <col style="width: 120px;">
+            <col style="width: 120px;">
+            <col style="width: 120px;">
+            <col style="width: 120px;">
         </colgroup>`;
         
         let weekCounter = 0;
         rows.forEach((row, i) => {
             if (i > 1 && row[0] && row[0].toLowerCase().includes("poniedziałek")) weekCounter++;
-            const weekClass = weekCounter % 2 === 0 ? "week-even" : "week-odd";
             const isToday = row[1] && row[1].trim() === todayCSV;
-            const todayRowClass = isToday ? " today-row" : "";
-
-            html += `<tr class="${weekClass}${todayRowClass}">`;
-            row.forEach((cell, j) => {
-                if (j > 5) return; 
-
-                if (i === 0) {
-                    if (j === 0) {
-                        // BRAK ROWSPAN - Logo będzie pływać nad tą komórką
-                        html += `<th class="logo-space" id="main-logo-container"></th>`;
-                    } else if (j === 1) {
-                        html += `<th class="logo-space-empty"></th>`;
-                    } else if (j > 1) {
-                        const nameColors = ["", "", "#38bdf8", "#818cf8", "#fbbf24", "#f472b6"];
-                        html += `<th style="color: ${nameColors[j]}; font-size: 2.2vh; font-weight: bold;">${cell}</th>`;
-                    }
-                } 
-                else if (i === 1) {
-                    if (j === 0 || j === 1) {
-                        html += `<th class="logo-space-filler"></th>`;
-                    } else if (j > 1) {
-                        html += `<th style="color: #64748b; font-size: 1.4vh; font-weight: normal;">${cell}</th>`;
-                    }
-                } 
-                else {
+            
+            if (i < 2) {
+                html += "<thead><tr>";
+                row.forEach((cell, j) => {
+                    if (j <= 5) html += `<th>${cell}</th>`;
+                });
+                html += "</tr></thead>";
+            } else {
+                html += `<tr class="${weekCounter % 2 === 0 ? 'week-even' : 'week-odd'} ${isToday ? 'today-row' : ''}">`;
+                row.forEach((cell, j) => {
+                    if (j > 5) return;
                     let className = (j === 0) ? "day" : (j === 1) ? "date" : "tech-data";
                     let content = (j === 0) ? shortenDay(cell) : (j === 1) ? shortenDate(cell) : cell;
                     
-                    let inlineStyle = ""; 
-                    let specialClass = "";
-                    const cellText = cell.toLowerCase();
-
-                    const rowDatePart = row[1] ? row[1].split("-") : null;
-                    const rowMonth = rowDatePart ? rowDatePart[1] : null; 
-                    const isCellInSelectedMonth = (rowMonth === currentViewMonth);
-
-                    if (j > 1) {
-                        if (!isCellInSelectedMonth) {
-                            inlineStyle = "color: #64748b;";
-                        } else {
-                            if (cellText.includes("8-16") && isToday && isAlarmTime) {
-                                specialClass = " alarm-pulse";
-                            }
-                            if (cellText.includes("8-16")) {
-                                content = content.replace(/8-16/i, '<span class="neon-blue-text">8-16</span>');
-                            } else if (cellText.includes("parking") || cellText.includes("8:00")) {
-                                inlineStyle = "color: #64748b;"; 
-                            }
-                        }
-                    } else {
-                        if (!isCellInSelectedMonth) inlineStyle = "color: #475569;"; 
+                    if (j > 1 && content.includes("8-16")) {
+                        content = content.replace(/8-16/i, '<span class="neon-blue-text">8-16</span>');
                     }
                     
-                    html += `<td class="${className}${specialClass}">
-                                <div class="marquee-box">
-                                    <span style="${inlineStyle}">${content}</span>
-                                </div>
+                    html += `<td class="${className}">
+                                <div class="marquee-box"><span>${content}</span></div>
                              </td>`;
-                }
-            });
-            html += "</tr>";
+                });
+                html += "</tr>";
+            }
         });
         html += "</table>";
         document.getElementById("table-container").innerHTML = html;
-        
-        const logoCont = document.getElementById("main-logo-container");
-        if (logoCont) logoCont.innerHTML = `<img src="${logoUrl}" alt="Logo" class="table-logo">`;
-
-        document.getElementById("update-time").innerText = new Date().toLocaleTimeString();
+        document.getElementById("update-time").innerText = now.toLocaleTimeString();
         updateClock();
         hideWeekends();
-        setTimeout(initSmartMarquee, 600);
-    } catch (err) { 
-        console.error("Błąd CSV:", err); 
-        setTimeout(loadData, 10000);
-    }
+        setTimeout(initSmartMarquee, 500);
+    } catch (err) { console.error(err); }
 }
 
 function initSmartMarquee() {
@@ -142,15 +94,10 @@ function initSmartMarquee() {
     spans.forEach(span => {
         const box = span.parentElement;
         span.classList.remove('animate-scroll');
-        span.style.transform = "translateX(0)";
-        
-        if (span.offsetWidth > (box.offsetWidth - 5)) {
-            box.style.justifyContent = "flex-start";
-            const distance = span.offsetWidth - box.offsetWidth + 30; 
+        if (span.offsetWidth > box.offsetWidth) {
+            const distance = span.offsetWidth - box.offsetWidth + 20;
             span.style.setProperty('--scroll-dist', `-${distance}px`);
             span.classList.add('animate-scroll');
-        } else {
-            box.style.justifyContent = "center";
         }
     });
 }
@@ -190,17 +137,11 @@ function changeMonth(m) {
 
 function updateClock() {
     const clock = document.getElementById("clock");
-    const now = new Date();
-    if (clock) clock.innerText = now.toLocaleTimeString("pl-PL");
+    if (clock) clock.innerText = new Date().toLocaleTimeString("pl-PL");
     const monthHeader = document.getElementById("current-month-name");
-    if (monthHeader) {
-        const selectedMonthIndex = parseInt(currentViewMonth) - 1;
-        monthHeader.innerText = `${monthNames[selectedMonthIndex].toUpperCase()} 2026`;
-    }
+    if (monthHeader) monthHeader.innerText = `${monthNames[parseInt(currentViewMonth)-1].toUpperCase()} 2026`;
 }
 
 renderNav();
 loadData();
 setInterval(updateClock, 1000);
-updateClock();
-setInterval(loadData, 300000);
