@@ -16,6 +16,67 @@ const sheetLinks = {
 const monthNames = ["Styczeń", "Luty", "Marzec", "Kwiecień", "Maj", "Czerwiec", "Lipiec", "Sierpień", "Wrzesień", "Październik", "Listopad", "Grudzień"];
 let currentViewMonth = String(new Date().getMonth() + 1).padStart(2, '0');
 
+async function loadData() {
+    const tableDiv = document.getElementById("table-container");
+    tableDiv.innerHTML = "<p style='text-align:center; padding:20px;'>Pobieranie danych...</p>";
+    
+    const url = sheetLinks[currentViewMonth];
+    // Używamy proxy, jeśli zwykły fetch zawiedzie (częsty problem na Safari)
+    const proxyUrl = "https://api.allorigins.win/get?url=" + encodeURIComponent(url);
+
+    try {
+        let rawData = "";
+        try {
+            const res = await fetch(url);
+            if (!res.ok) throw new Error();
+            rawData = await res.text();
+        } catch (e) {
+            console.log("Próba przez proxy...");
+            const resProxy = await fetch(proxyUrl);
+            const json = await resProxy.json();
+            rawData = json.contents;
+        }
+
+        const rows = rawData.split(/\r?\n/).filter(line => line.trim() !== "").map(parseCSVLine);
+        const now = new Date();
+        const todayCSV = `${now.getFullYear()}-${String(now.getMonth() + 1).padStart(2, '0')}-${String(now.getDate()).padStart(2, '0')}`;
+        
+        let html = "<table><colgroup><col style='width:50px;'><col style='width:70px;'><col style='width:300px;'><col style='width:300px;'><col style='width:300px;'><col style='width:300px;'></colgroup>";
+        
+        let weekCounter = 0;
+        rows.forEach((row, i) => {
+            if (i > 1 && row[0] && row[0].toLowerCase().includes("poniedziałek")) weekCounter++;
+            const isToday = row[1] && row[1].trim() === todayCSV;
+
+            if (i < 2) {
+                html += "<thead><tr>";
+                row.forEach((cell, j) => { if(j <= 5) html += `<th>${cell}</th>`; });
+                html += "</tr></thead><tbody>";
+            } else {
+                html += `<tr class="${weekCounter % 2 === 0 ? 'week-even' : 'week-odd'} ${isToday ? 'today-row' : ''}">`;
+                row.forEach((cell, j) => {
+                    if (j > 5) return;
+                    let content = (j === 0) ? shortenDay(cell) : (j === 1) ? shortenDate(cell) : cell;
+                    if (j > 1 && content.includes("8-16")) content = content.replace(/8-16/i, '<span class="neon-blue-text">8-16</span>');
+                    
+                    html += `<td class="${(j===0)?'day':(j===1)?'date':'tech-data'}">
+                                <div class="marquee-box"><span>${content}</span></div>
+                             </td>`;
+                });
+                html += "</tr>";
+            }
+        });
+        html += "</tbody></table>";
+        tableDiv.innerHTML = html;
+        document.getElementById("update-time").innerText = now.toLocaleTimeString();
+        updateClock();
+        hideWeekends();
+        setTimeout(initSmartMarquee, 500);
+    } catch (err) { 
+        tableDiv.innerHTML = "<p style='color:red; text-align:center;'>Błąd pobierania. Sprawdź internet lub link Google Sheets.</p>";
+    }
+}
+
 function parseCSVLine(line) {
     const result = [];
     let cur = "";
@@ -31,85 +92,31 @@ function parseCSVLine(line) {
     return result.map(cell => cell.replace(/^"(.*)"$/, '$1'));
 }
 
-// ... (początek script.js bez zmian aż do funkcji loadData) ...
-
-async function loadData() {
-    const url = sheetLinks[currentViewMonth];
-    try {
-        const res = await fetch(url);
-        const rawData = await res.text();
-        const rows = rawData.split(/\r?\n/).filter(line => line.trim() !== "").map(parseCSVLine);
-
-        const now = new Date();
-        const todayCSV = `${now.getFullYear()}-${String(now.getMonth() + 1).padStart(2, '0')}-${String(now.getDate()).padStart(2, '0')}`;
-        
-        let html = "<table>";
-        // Szerokie kolumny (300px)
-        html += `<colgroup>
-            <col style="width: 50px;">
-            <col style="width: 70px;">
-            <col style="width: 300px;">
-            <col style="width: 300px;">
-            <col style="width: 300px;">
-            <col style="width: 300px;">
-        </colgroup>`;
-        
-        let weekCounter = 0;
-        rows.forEach((row, i) => {
-            if (i > 1 && row[0] && row[0].toLowerCase().includes("poniedziałek")) weekCounter++;
-            const isToday = row[1] && row[1].trim() === todayCSV;
-
-            if (i < 2) {
-                html += "<thead><tr>";
-                row.forEach((cell, j) => { if(j <= 5) html += `<th>${cell}</th>`; });
-                html += "</tr></thead>";
-            } else {
-                html += `<tr class="${weekCounter % 2 === 0 ? 'week-even' : 'week-odd'} ${isToday ? 'today-row' : ''}">`;
-                row.forEach((cell, j) => {
-                    if (j > 5) return;
-                    let content = (j === 0) ? shortenDay(cell) : (j === 1) ? shortenDate(cell) : cell;
-                    if (j > 1 && content.includes("8-16")) content = content.replace(/8-16/i, '<span class="neon-blue-text">8-16</span>');
-                    
-                    // Ustawiamy flex-start dla techników, żeby tekst nie był ucięty na starcie
-                    let alignment = (j < 2) ? "center" : "flex-start";
-                    
-                    html += `<td class="${(j===0)?'day':(j===1)?'date':'tech-data'}">
-                                <div class="marquee-box" style="justify-content: ${alignment}"><span>${content}</span></div>
-                             </td>`;
-                });
-                html += "</tr>";
-            }
-        });
-        html += "</table>";
-        document.getElementById("table-container").innerHTML = html;
-        document.getElementById("update-time").innerText = now.toLocaleTimeString();
-        updateClock();
-        hideWeekends();
-        setTimeout(initSmartMarquee, 500);
-    } catch (err) { console.error(err); }
-}
-
 function initSmartMarquee() {
     const spans = document.querySelectorAll('.tech-data span');
     spans.forEach(span => {
         const box = span.parentElement;
-        // Resetujemy animację przed obliczeniem
         span.classList.remove('animate-scroll');
-        
-        if (span.offsetWidth > (box.offsetWidth - 10)) {
-            // Tekst jest za długi - ustawiamy go do lewej i odpalamy scroll
+        if (span.offsetWidth > box.offsetWidth - 5) {
             box.style.justifyContent = "flex-start";
             const distance = span.offsetWidth - box.offsetWidth + 40;
             span.style.setProperty('--scroll-dist', `-${distance}px`);
             span.classList.add('animate-scroll');
         } else {
-            // Tekst jest krótki - centrujemy go ładnie
             box.style.justifyContent = "center";
         }
     });
 }
 
-// ... (reszta funkcji shortenDay, renderNav, updateClock - bez zmian) ...
+function shortenDay(day) {
+    const days = {"poniedziałek":"Pon","wtorek":"Wt","środa":"Śr","czwartek":"Czw","piątek":"Pt","sobota":"Sob","niedziela":"Nd"};
+    return days[day.toLowerCase()] || day;
+}
+
+function shortenDate(dateStr) {
+    const parts = dateStr.split("-");
+    return parts.length === 3 ? `${parts[2]}.${parts[1]}` : dateStr;
+}
 
 function hideWeekends() {
     const rows = document.querySelectorAll("table tr");
@@ -117,12 +124,37 @@ function hideWeekends() {
         const dayCell = row.querySelector(".day");
         if (dayCell) {
             const text = dayCell.innerText.trim().toLowerCase();
-            // Obsługa różnych formatów (Android/iPhone)
             if (text === "sob" || text === "nd" || text === "sobota" || text === "niedziela") {
                 row.classList.add("hidden-weekend");
             }
         }
     });
+}
+
+function renderNav() {
+    let navHtml = "";
+    for (let i = 1; i <= 12; i++) {
+        const m = String(i).padStart(2, '0');
+        navHtml += `<button id="btn-${m}" class="nav-btn ${m === currentViewMonth ? 'active' : ''}" onclick="changeMonth('${m}')">${monthNames[i-1]}</button>`;
+    }
+    document.getElementById("month-nav").innerHTML = navHtml;
+    setTimeout(() => {
+        const activeBtn = document.getElementById(`btn-${currentViewMonth}`);
+        if (activeBtn) activeBtn.scrollIntoView({ behavior: 'smooth', inline: 'center' });
+    }, 400);
+}
+
+function changeMonth(m) {
+    currentViewMonth = m;
+    renderNav();
+    loadData();
+}
+
+function updateClock() {
+    const clock = document.getElementById("clock");
+    if (clock) clock.innerText = new Date().toLocaleTimeString("pl-PL");
+    const mHeader = document.getElementById("current-month-name");
+    if (mHeader) mHeader.innerText = `${monthNames[parseInt(currentViewMonth)-1].toUpperCase()} 2026`;
 }
 
 renderNav();
