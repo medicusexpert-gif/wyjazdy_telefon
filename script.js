@@ -31,6 +31,8 @@ function parseCSVLine(line) {
     return result.map(cell => cell.replace(/^"(.*)"$/, '$1'));
 }
 
+// ... (początek script.js bez zmian aż do funkcji loadData) ...
+
 async function loadData() {
     const url = sheetLinks[currentViewMonth];
     try {
@@ -42,7 +44,7 @@ async function loadData() {
         const todayCSV = `${now.getFullYear()}-${String(now.getMonth() + 1).padStart(2, '0')}-${String(now.getDate()).padStart(2, '0')}`;
         
         let html = "<table>";
-        // SZEROKIE KOLUMNY (300px na technika)
+        // Szerokie kolumny (300px)
         html += `<colgroup>
             <col style="width: 50px;">
             <col style="width: 70px;">
@@ -68,8 +70,11 @@ async function loadData() {
                     let content = (j === 0) ? shortenDay(cell) : (j === 1) ? shortenDate(cell) : cell;
                     if (j > 1 && content.includes("8-16")) content = content.replace(/8-16/i, '<span class="neon-blue-text">8-16</span>');
                     
+                    // Ustawiamy flex-start dla techników, żeby tekst nie był ucięty na starcie
+                    let alignment = (j < 2) ? "center" : "flex-start";
+                    
                     html += `<td class="${(j===0)?'day':(j===1)?'date':'tech-data'}">
-                                <div class="marquee-box"><span>${content}</span></div>
+                                <div class="marquee-box" style="justify-content: ${alignment}"><span>${content}</span></div>
                              </td>`;
                 });
                 html += "</tr>";
@@ -88,23 +93,23 @@ function initSmartMarquee() {
     const spans = document.querySelectorAll('.tech-data span');
     spans.forEach(span => {
         const box = span.parentElement;
-        if (span.offsetWidth > box.offsetWidth) {
+        // Resetujemy animację przed obliczeniem
+        span.classList.remove('animate-scroll');
+        
+        if (span.offsetWidth > (box.offsetWidth - 10)) {
+            // Tekst jest za długi - ustawiamy go do lewej i odpalamy scroll
+            box.style.justifyContent = "flex-start";
             const distance = span.offsetWidth - box.offsetWidth + 40;
             span.style.setProperty('--scroll-dist', `-${distance}px`);
             span.classList.add('animate-scroll');
+        } else {
+            // Tekst jest krótki - centrujemy go ładnie
+            box.style.justifyContent = "center";
         }
     });
 }
 
-function shortenDay(day) {
-    const days = {"poniedziałek":"Pon","wtorek":"Wt","środa":"Śr","czwartek":"Czw","piątek":"Pt","sobota":"Sob","niedziela":"Nd"};
-    return days[day.toLowerCase()] || day;
-}
-
-function shortenDate(dateStr) {
-    const parts = dateStr.split("-");
-    return parts.length === 3 ? `${parts[2]}.${parts[1]}` : dateStr;
-}
+// ... (reszta funkcji shortenDay, renderNav, updateClock - bez zmian) ...
 
 function hideWeekends() {
     const rows = document.querySelectorAll("table tr");
@@ -112,37 +117,12 @@ function hideWeekends() {
         const dayCell = row.querySelector(".day");
         if (dayCell) {
             const text = dayCell.innerText.trim().toLowerCase();
+            // Obsługa różnych formatów (Android/iPhone)
             if (text === "sob" || text === "nd" || text === "sobota" || text === "niedziela") {
                 row.classList.add("hidden-weekend");
             }
         }
     });
-}
-
-function renderNav() {
-    let navHtml = "";
-    for (let i = 1; i <= 12; i++) {
-        const m = String(i).padStart(2, '0');
-        navHtml += `<button id="btn-${m}" class="nav-btn ${m === currentViewMonth ? 'active' : ''}" onclick="changeMonth('${m}')">${monthNames[i-1]}</button>`;
-    }
-    document.getElementById("month-nav").innerHTML = navHtml;
-    setTimeout(() => {
-        const activeBtn = document.getElementById(`btn-${currentViewMonth}`);
-        if (activeBtn) activeBtn.scrollIntoView({ behavior: 'smooth', inline: 'center' });
-    }, 400);
-}
-
-function changeMonth(m) {
-    currentViewMonth = m;
-    renderNav();
-    loadData();
-}
-
-function updateClock() {
-    const clock = document.getElementById("clock");
-    if (clock) clock.innerText = new Date().toLocaleTimeString("pl-PL");
-    const mHeader = document.getElementById("current-month-name");
-    if (mHeader) mHeader.innerText = `${monthNames[parseInt(currentViewMonth)-1].toUpperCase()} 2026`;
 }
 
 renderNav();
