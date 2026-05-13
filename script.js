@@ -43,11 +43,8 @@ async function loadData() {
         const isAlarmTime = (now.getHours() > 15) || (now.getHours() === 15 && now.getMinutes() >= 30);
         const todayCSV = `${now.getFullYear()}-${String(now.getMonth() + 1).padStart(2, '0')}-${String(now.getDate()).padStart(2, '0')}`;
         
-        const realMonth = String(now.getMonth() + 1).padStart(2, '0');
-        const isCurrentMonthViewed = (currentViewMonth === realMonth);
-
         let html = "<table>";
-        html += `<colgroup><col style="width: 100px;"><col style="width: 130px;"><col style="width: auto;"><col style="width: auto;"><col style="width: auto;"><col style="width: auto;"></colgroup>`;
+        html += `<colgroup><col style="width: 80px;"><col style="width: 100px;"><col style="width: auto;"><col style="width: auto;"><col style="width: auto;"><col style="width: auto;"></colgroup>`;
         
         let weekCounter = 0;
         rows.forEach((row, i) => {
@@ -70,49 +67,42 @@ async function loadData() {
                 else if (i === 1) {
                     if (j > 1) html += `<th style="color: #64748b; font-size: 1.4vh; font-weight: normal;">${cell}</th>`;
                 } 
-               // ... fragment wewnątrz rows.forEach -> row.forEach -> else ...
-else {
-    let className = (j === 0) ? "day" : (j === 1) ? "date" : "tech-data";
-    let content = (j === 0) ? shortenDay(cell) : (j === 1) ? shortenDate(cell) : cell;
-    
-    let inlineStyle = ""; 
-    let specialClass = "";
-    const cellText = cell.toLowerCase();
+                else {
+                    let className = (j === 0) ? "day" : (j === 1) ? "date" : "tech-data";
+                    let content = (j === 0) ? shortenDay(cell) : (j === 1) ? shortenDate(cell) : cell;
+                    
+                    let inlineStyle = ""; 
+                    let specialClass = "";
+                    const cellText = cell.toLowerCase();
 
-    // SPRAWDZANIE CZY WIERSZ NALEŻY DO WYBRANEGO MIESIĄCA
-    // row[1] to data w formacie RRRR-MM-DD
-    const rowDatePart = row[1] ? row[1].split("-") : null;
-    const rowMonth = rowDatePart ? rowDatePart[1] : null; 
-    const isCellInSelectedMonth = (rowMonth === currentViewMonth);
+                    const rowDatePart = row[1] ? row[1].split("-") : null;
+                    const rowMonth = rowDatePart ? rowDatePart[1] : null; 
+                    const isCellInSelectedMonth = (rowMonth === currentViewMonth);
 
-    if (j > 1) {
-        // JEŚLI WIERSZ NIE JEST Z WYBRANEGO MIESIĄCA LUB OGLĄDAMY INNY MIESIĄC NIŻ OBECNY
-        if (!isCellInSelectedMonth) {
-            inlineStyle = "color: #64748b;"; // Wygaszenie (szary)
-        } else {
-            // Alarm dla dzisiejszego dnia po 15:30
-            if (cellText.includes("8-16") && isToday && isAlarmTime) {
-                specialClass = " alarm-pulse";
-            }
-            
-            // Kolorowanie tylko 8-16
-            if (cellText.includes("8-16")) {
-                content = content.replace(/8-16/i, '<span class="neon-blue-text">8-16</span>');
-            } else if (cellText.includes("parking") || cellText.includes("8:00")) {
-                inlineStyle = "color: #64748b;"; // Szary dla parkingu
-            }
-        }
-    } else {
-        // Dla kolumn Dzień i Data też stosujemy wygaszenie jeśli to inny miesiąc
-        if (!isCellInSelectedMonth) inlineStyle = "color: #475569;"; 
-    }
-    
-    html += `<td class="${className}${specialClass}">
-                <div class="marquee-box">
-                    <span style="${inlineStyle}">${content}</span>
-                </div>
-             </td>`;
-}            });
+                    if (j > 1) {
+                        if (!isCellInSelectedMonth) {
+                            inlineStyle = "color: #64748b;";
+                        } else {
+                            if (cellText.includes("8-16") && isToday && isAlarmTime) {
+                                specialClass = " alarm-pulse";
+                            }
+                            if (cellText.includes("8-16")) {
+                                content = content.replace(/8-16/i, '<span class="neon-blue-text">8-16</span>');
+                            } else if (cellText.includes("parking") || cellText.includes("8:00")) {
+                                inlineStyle = "color: #64748b;"; 
+                            }
+                        }
+                    } else {
+                        if (!isCellInSelectedMonth) inlineStyle = "color: #475569;"; 
+                    }
+                    
+                    html += `<td class="${className}${specialClass}">
+                                <div class="marquee-box">
+                                    <span style="${inlineStyle}">${content}</span>
+                                </div>
+                             </td>`;
+                }
+            });
             html += "</tr>";
         });
         html += "</table>";
@@ -123,11 +113,18 @@ else {
 
         document.getElementById("update-time").innerText = new Date().toLocaleTimeString();
         hideWeekends();
-        setTimeout(initSmartMarquee, 200);
+        setTimeout(initSmartMarquee, 500);
     } catch (err) { 
         console.error("Błąd CSV:", err); 
         setTimeout(loadData, 10000);
     }
+}
+
+function activateAndRefresh() {
+    const elem = document.documentElement;
+    if (elem.requestFullscreen) elem.requestFullscreen();
+    else if (elem.webkitRequestFullscreen) elem.webkitRequestFullscreen();
+    loadData();
 }
 
 function initSmartMarquee() {
@@ -137,8 +134,8 @@ function initSmartMarquee() {
         span.classList.remove('animate-scroll');
         if (span.offsetWidth > box.offsetWidth) {
             box.style.justifyContent = "flex-start";
-            const distance = span.offsetWidth - box.offsetWidth + 25; 
-            span.style.setProperty('--scroll-dist', `-${distance}px`);
+            const distance = span.offsetWidth - box.offsetWidth + 20; 
+            span.style.setProperty('--scroll-dist', `-\${distance}px`);
             span.classList.add('animate-scroll');
         } else {
             box.style.justifyContent = "center";
@@ -153,7 +150,7 @@ function shortenDay(day) {
 
 function shortenDate(dateStr) {
     const parts = dateStr.split("-");
-    return parts.length === 3 ? `${parts[2]}.${parts[1]}` : dateStr;
+    return parts.length === 3 ? `\${parts[2]}.\${parts[1]}` : dateStr;
 }
 
 function hideWeekends() {
@@ -168,7 +165,7 @@ function renderNav() {
     let navHtml = "";
     for (let i = 1; i <= 12; i++) {
         const m = String(i).padStart(2, '0');
-        navHtml += `<button class="nav-btn ${m === currentViewMonth ? 'active' : ''}" onclick="changeMonth('${m}')">${monthNames[i-1]}</button>`;
+        navHtml += `<button class="nav-btn \${m === currentViewMonth ? 'active' : ''}" onclick="changeMonth('\${m}')">\${monthNames[i-1]}</button>`;
     }
     document.getElementById("month-nav").innerHTML = navHtml;
 }
@@ -184,7 +181,7 @@ function updateClock() {
     const now = new Date();
     if (clock) clock.innerText = now.toLocaleTimeString("pl-PL");
     const monthHeader = document.getElementById("current-month-name");
-    if (monthHeader) monthHeader.innerText = `${monthNames[parseInt(currentViewMonth)-1].toUpperCase()} 2026`;
+    if (monthHeader) monthHeader.innerText = `\${monthNames[parseInt(currentViewMonth)-1].toUpperCase()} 2026`;
 }
 
 renderNav();
