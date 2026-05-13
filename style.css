@@ -1,59 +1,52 @@
-/* RESET I PODSTAWA */
+/* PODSTAWA I IPHONE FIX */
 * { 
     box-sizing: border-box; 
-    -webkit-tap-highlight-color: transparent; /* Usuwa szary błysk przy klikaniu na iPhone */
+    -webkit-tap-highlight-color: transparent;
 }
 
 body { 
     margin: 0; 
     background: #020617; 
     color: white; 
-    font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif; 
-    /* Odblokowujemy naturalne przewijanie pionowe całego ekranu */
+    font-family: -apple-system, sans-serif; 
     overflow-x: hidden; 
     overflow-y: auto; 
-    height: auto; 
 }
 
-.main-scroll-container {
-    display: flex;
-    flex-direction: column;
-    min-height: 100vh;
-    padding-bottom: env(safe-area-inset-bottom); /* Bezpieczna strefa na dole iPhone */
-}
-
-/* NAGŁÓWEK Z LOGO */
+/* NAGŁÓWEK - LOGO I CZAS */
 .header {
     background: #0f172a;
-    padding: 20px 15px;
+    padding: 15px;
     display: flex;
     align-items: center;
     gap: 15px;
     border-bottom: 1px solid #1e293b;
+    height: 80px;
 }
 
 .iphone-logo {
-    height: 35px;
-    width: auto;
+    height: 40px !important;
+    width: auto !important;
+    max-width: 120px;
     object-fit: contain;
 }
 
 .title-box { display: flex; flex-direction: column; }
-.title { font-size: 19px; font-weight: bold; color: #38bdf8; text-transform: uppercase; }
-.time { font-size: 14px; color: #94a3b8; font-family: monospace; }
+.title { font-size: 18px; font-weight: bold; color: #38bdf8; }
+.time { font-size: 13px; color: #94a3b8; font-family: monospace; }
 
-/* NAWIGACJA MIESIĘCY - PRZEWIJANA POZIOMO */
+/* NAWIGACJA MIESIĘCY */
 .nav-container { 
     display: flex; 
     overflow-x: auto; 
     white-space: nowrap;
     padding: 12px 10px; 
     background: #020617;
-    -webkit-overflow-scrolling: touch; /* Płynny scroll na iPhone */
+    -webkit-overflow-scrolling: touch;
     border-bottom: 1px solid #1e293b;
     gap: 8px;
 }
-.nav-container::-webkit-scrollbar { display: none; } /* Ukrywamy pasek scrolla */
+.nav-container::-webkit-scrollbar { display: none; }
 
 .nav-btn { 
     flex: 0 0 auto;
@@ -64,139 +57,103 @@ body {
     font-size: 14px; 
     border-radius: 8px; 
 }
-.nav-btn.active { 
-    color: #00ff00; 
-    border-color: #00ff00; 
-    background: #064e3b; 
-    font-weight: bold;
-}
+.nav-btn.active { color: #00ff00; border-color: #00ff00; background: #064e3b; }
 
-/* KONTENER TABELI */
+/* TABELA - RÓWNE KOLUMNY I STICKY */
 #table-container { 
     width: 100%;
-    overflow-x: auto; /* Pozwala przesuwać tabelę lewo-prawo */
+    overflow-x: auto;
     -webkit-overflow-scrolling: touch;
 }
 
 table { 
     width: 100%; 
-    border-collapse: separate; /* Ważne dla sticky columns */
+    border-collapse: separate; 
     border-spacing: 0;
-    min-width: 750px; /* Szerokość zapewniająca czytelność techników */
+    table-layout: fixed; /* WYMUSZA RÓWNE SZEROKOŚCI */
+    min-width: 900px; /* Zwiększona szerokość dla 4 techników */
 }
 
-/* STICKY HEADER (Nagłówki kolumn zostają u góry) */
 th { 
     background: #1e293b; 
     color: #94a3b8; 
     font-size: 12px; 
     padding: 15px 5px; 
-    text-align: center;
     position: sticky;
     top: 0;
-    z-index: 30; /* Najwyższy priorytet */
+    z-index: 100;
     border-bottom: 1px solid #334155;
 }
 
-/* STICKY COLUMNS (Blokowanie Dnia i Daty) */
-
-/* Pierwsza kolumna: Dzień */
-th:nth-child(1), 
-td:nth-child(1) {
-    position: sticky;
-    left: 0;
-    z-index: 20;
+/* BLOKOWANIE KOLUMN DATY */
+th:nth-child(1), td:nth-child(1) {
+    position: sticky !important;
+    left: 0 !important;
+    z-index: 50;
     width: 50px;
-    min-width: 50px;
-    border-right: 1px solid #334155;
+    background-color: inherit;
 }
 
-/* Druga kolumna: Data */
-th:nth-child(2), 
-td:nth-child(2) {
-    position: sticky;
-    left: 50px; /* Szerokość pierwszej kolumny */
-    z-index: 20;
+th:nth-child(2), td:nth-child(2) {
+    position: sticky !important;
+    left: 50px !important;
+    z-index: 50;
     width: 65px;
-    min-width: 65px;
-    border-right: 3px solid #38bdf8; /* Grubsza linia oddzielająca daty od reszty */
+    border-right: 3px solid #38bdf8 !important;
+    background-color: inherit;
 }
 
-/* Tła dla zablokowanych kolumn (muszą być nieprzezroczyste) */
-td.day, td.date {
-    background-color: #0f172a; 
-}
-.week-even td.day, .week-even td.date {
-    background-color: #020617;
-}
-.today-row td.day, .today-row td.date {
-    background-color: #164e63 !important;
-}
+/* Tła dla zablokowanych komórek */
+.week-odd td:nth-child(1), .week-odd td:nth-child(2) { background-color: #0f172a; }
+.week-even td:nth-child(1), .week-even td:nth-child(2) { background-color: #020617; }
+.today-row td:nth-child(1), .today-row td:nth-child(2) { background-color: #164e63 !important; }
 
-/* STYLE KOMÓREK */
+/* DANE TECHNIKÓW */
 .tech-data { 
     height: 55px; 
     border-bottom: 1px solid #1e293b; 
     border-right: 1px solid #1e293b;
     font-size: 16px;
     text-align: center;
+    overflow: hidden; /* Ważne dla marquee */
 }
 
-.day { font-weight: bold; color: #64748b; font-size: 13px; text-align: center; }
-.date { font-weight: bold; color: #38bdf8; font-size: 13px; text-align: center; }
-
-.week-odd { background: #0f172a; }
-.week-even { background: #020617; }
-.today-row { background: #164e63 !important; }
-.today-row td { border-top: 1px solid #22d3ee; border-bottom: 1px solid #22d3ee; }
-
-/* ANIMACJA MARQUEE (Pływający tekst) */
+/* ANIMACJA MARQUEE (Jak na TV) */
 .marquee-box { 
     width: 100%; 
     height: 100%; 
     display: flex; 
     align-items: center; 
+    justify-content: center;
     overflow: hidden; 
 }
+
 .marquee-box span { 
     display: inline-block; 
     white-space: nowrap; 
-    padding: 0 12px; 
+    padding: 0 10px;
     will-change: transform;
 }
+
 .animate-scroll { 
     animation: smart-scroll 8s linear infinite alternate; 
 }
 
 @keyframes smart-scroll {
-  0%, 15% { transform: translateX(0); }
-  85%, 100% { transform: translateX(var(--scroll-dist)); }
+  0%, 20% { transform: translateX(0); }
+  80%, 100% { transform: translateX(var(--scroll-dist)); }
 }
 
-/* KOLORY SPECJALNE */
-.neon-blue-text { 
-    color: #00d2ff !important; 
-    font-weight: bold; 
-    text-shadow: 0 0 5px #0044ff;
-}
+.day { font-weight: bold; color: #64748b; font-size: 13px; text-align: center; }
+.date { font-weight: bold; color: #38bdf8; font-size: 13px; text-align: center; }
+.week-odd { background: #0f172a; }
+.week-even { background: #020617; }
+.today-row { background: #164e63 !important; }
+.neon-blue-text { color: #00d2ff !important; font-weight: bold; }
 
 /* STOPKA */
-.footer { 
-    padding: 40px 20px; 
-    text-align: center; 
-    color: #475569; 
-    font-size: 13px;
-    background: #020617;
-}
+.footer { padding: 40px 20px; text-align: center; color: #475569; font-size: 13px; }
 .refresh-btn { 
-    background: #0ea5e9; 
-    color: white; 
-    border: none; 
-    padding: 16px; 
-    border-radius: 12px; 
-    width: 100%; 
-    font-weight: bold; 
-    font-size: 16px;
-    margin-bottom: 12px;
-    box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.3);
+    background: #0ea5e9; color: white; border: none; padding: 16px; 
+    border-radius: 12px; width: 100%; font-weight: bold; margin-bottom: 10px;
 }
